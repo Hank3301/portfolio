@@ -22,6 +22,10 @@ class Settings(BaseSettings):
     # CORS
     ALLOWED_ORIGINS: List[str] = ["http://localhost:3000"]
 
+    # GitHub Integration
+    GITHUB_USERNAME: str  # obrigatório
+    GITHUB_TOKEN: str | None = None  # opcional (rate limit maior)
+
 
 @lru_cache
 def get_settings() -> Settings:
