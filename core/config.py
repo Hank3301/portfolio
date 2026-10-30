@@ -8,7 +8,7 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=True,
-        extra="ignore"
+        extra="ignore",
     )
 
     # App
@@ -23,8 +23,14 @@ class Settings(BaseSettings):
     ALLOWED_ORIGINS: List[str] = ["http://localhost:3000"]
 
     # GitHub Integration
-    GITHUB_USERNAME: str  # obrigatório
-    GITHUB_TOKEN: str | None = None  # opcional (rate limit maior)
+    GITHUB_USERNAME: str
+    GITHUB_TOKEN: str | None = None
+
+    # Auth / Admin
+    SECRET_KEY: str
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 10080
+    ADMIN_USERNAME: str
+    ADMIN_PASSWORD_HASH: str
 
 
 @lru_cache

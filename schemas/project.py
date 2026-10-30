@@ -1,9 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
 from uuid import UUID
-
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl
-
 
 class ProjectBase(BaseModel):
     """Campos compartilhados."""
@@ -14,14 +12,10 @@ class ProjectBase(BaseModel):
     live_url: Optional[HttpUrl] = None
     is_visible: bool = True
 
-
 class ProjectCreate(ProjectBase):
-    """Schema para criação."""
     pass
 
-
 class ProjectUpdate(BaseModel):
-    """Schema para atualização parcial (todos opcionais)."""
     title: Optional[str] = Field(None, min_length=1, max_length=200)
     description: Optional[str] = None
     tech_stack: Optional[List[str]] = None
@@ -29,18 +23,13 @@ class ProjectUpdate(BaseModel):
     live_url: Optional[HttpUrl] = None
     is_visible: Optional[bool] = None
 
-
 class ProjectResponse(ProjectBase):
-    """Schema de resposta pública."""
     model_config = ConfigDict(from_attributes=True)
-
     id: UUID
     created_at: datetime
     updated_at: datetime
 
-
 class ProjectListResponse(BaseModel):
-    """Resposta paginada (futuro)."""
     items: List[ProjectResponse]
     total: int
     page: int
