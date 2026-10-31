@@ -14,13 +14,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Henrique Costa | Desenvolvedor Full-Stack",
-  description: "Portfólio profissional de Henrique Costa — Desenvolvedor Full-Stack especializado em React, Next.js, Python, FastAPI e arquitetura cloud.",
-  keywords: ["desenvolvedor", "full-stack", "portfolio", "react", "nextjs", "python", "fastapi", "henrique costa"],
-  authors: [{ name: "Henrique Costa" }],
+  title: "Hugo Costa de Souza | Desenvolvedor Full-Stack",
+  description: "Portfólio profissional de Hugo Costa de Souza — Desenvolvedor Full-Stack especializado em React, Next.js, Python, FastAPI e arquitetura cloud.",
+  keywords: ["desenvolvedor", "full-stack", "portfolio", "react", "nextjs", "python", "fastapi", "hugo costa de souza"],
+  authors: [{ name: "Hugo Costa de Souza" }],
   openGraph: {
-    title: "Henrique Costa | Desenvolvedor Full-Stack",
-    description: "Portfólio profissional de Henrique Costa — Desenvolvedor Full-Stack.",
+    title: "Hugo Costa de Souza | Desenvolvedor Full-Stack",
+    description: "Portfólio profissional de Hugo Costa de Souza — Desenvolvedor Full-Stack.",
     type: "website",
   },
 };
@@ -41,7 +41,7 @@ export default function RootLayout({
         <main className="flex-1 pt-16">{children}</main>
         <footer className="border-t border-zinc-800 py-8">
           <div className="mx-auto max-w-7xl px-4 text-center text-sm text-zinc-500">
-            © {new Date().getFullYear()} Henrique Costa. Todos os direitos reservados.
+            © {new Date().getFullYear()} Hugo Costa de Souza. Todos os direitos reservados.
           </div>
         </footer>
       </body>

@@ -1,36 +1,131 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Portfólio Full-Stack — Hugo Costa de Souza
 
-## Getting Started
+Monorepo com backend (FastAPI) e frontend (Next.js 16 + App Router).
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Estrutura do Repositório
+
+```
+.
+├── backend/          # FastAPI — produção no Render
+│   ├── api/
+│   ├── core/
+│   ├── crud/
+│   ├── models/
+│   ├── schemas/
+│   ├── services/
+│   ├── main.py
+│   ├── requirements.txt
+│   └── .env.example
+└── frontend/         # Next.js 16 — pronto para Vercel
+    ├── src/
+    │   ├── app/              # App Router (page.tsx, layout.tsx)
+    │   ├── components/       # Hero, Navbar, ProjectCard, ProjectsGrid
+    │   └── services/         # api.ts (tipos + fetchProjects)
+    ├── public/
+    ├── package.json
+    ├── next.config.ts
+    └── tsconfig.json
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Como Rodar Local
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Backend
+```bash
+cd backend
+python -m venv .venv
+# Windows
+.venv\Scripts\activate
+# Linux/macOS
+source .venv/bin/activate
 
-## Learn More
+pip install -r requirements.txt
+cp .env.example .env      # edite as variáveis necessárias
+uvicorn main:app --reload
+# http://localhost:8000
+# Swagger: http://localhost:8000/docs
+```
 
-To learn more about Next.js, take a look at the following resources:
+### Frontend
+```bash
+cd frontend
+npm install
+# Crie .env.local com:
+# NEXT_PUBLIC_API_URL=https://portfolio-api-hank.onrender.com
+npm run dev
+# http://localhost:3000
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Variáveis de Ambiente
 
-## Deploy on Vercel
+### Backend (`backend/.env`)
+| Variável | Descrição |
+|----------|-----------|
+| `DATABASE_URL` | PostgreSQL (Supabase pooler) |
+| `SUPABASE_URL` | URL do projeto Supabase |
+| `SUPABASE_KEY` | Service role key do Supabase |
+| `SECRET_KEY` | Chave secreta para JWT (32+ chars) |
+| `ADMIN_USERNAME` | Usuário admin |
+| `ADMIN_PASSWORD_HASH` | Hash bcrypt da senha |
+| `GITHUB_USERNAME` | Username GitHub para integração |
+| `PYTHON_VERSION` | `3.11.9` (fixo no Render) |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Frontend (`frontend/.env.local`)
+| Variável | Descrição |
+|----------|-----------|
+| `NEXT_PUBLIC_API_URL` | URL da API (ex: `https://portfolio-api-hank.onrender.com`) |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## Deploy
+
+| Serviço | Pasta | Build Command | Start Command | Root Directory |
+|---------|-------|---------------|---------------|----------------|
+| **Render** | `backend/` | `pip install -r requirements.txt` | `uvicorn main:app --host 0.0.0.0 --port $PORT` | `backend/` |
+| **Vercel** | `frontend/` | `npm run build` | (automático) | `frontend/` |
+
+> O Render está configurado para fazer deploy automático a partir da branch `main` com `Root Directory: backend/`.
+
+---
+
+## Scripts Úteis
+
+```bash
+# Frontend
+cd frontend
+npm run dev          # desenvolvimento
+npm run build        # build de produção
+npm run lint         # ESLint
+
+# Backend
+cd backend
+uvicorn main:app --reload    # desenvolvimento
+uvicorn main:app --host 0.0.0.0 --port 8000  # produção local
+```
+
+---
+
+## Health Check
+
+- **API**: `https://portfolio-api-hank.onrender.com/api/health`
+- **Swagger**: `https://portfolio-api-hank.onrender.com/docs`
+
+---
+
+## Próximos Passos (Frontend)
+
+- [x] Hero Section + Grid de Projetos
+- [ ] Seção Skills
+- [ ] Deploy na Vercel
+- [ ] Login Admin + Dashboard (rotas protegidas JWT)
+
+---
+
+## Licença
+
+MIT — Uso livre para fins educacionais e profissionais.

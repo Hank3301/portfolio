@@ -8,10 +8,10 @@ const LINKEDIN_URL = "TODO";
 const GITHUB_URL = "https://github.com/Hank3301";
 
 export const metadata = {
-  title: 'Henrique Costa | Desenvolvedor Full-Stack',
-  description: 'Portfólio de Henrique Costa — Desenvolvedor Full-Stack especializado em React, Next.js, Python, FastAPI e arquitetura cloud.',
+  title: 'Hugo Costa de Souza | Desenvolvedor Full-Stack',
+  description: 'Portfólio de Hugo Costa de Souza — Desenvolvedor Full-Stack especializado em React, Next.js, Python, FastAPI e arquitetura cloud.',
   openGraph: {
-    title: 'Henrique Costa | Desenvolvedor Full-Stack',
+    title: 'Hugo Costa de Souza | Desenvolvedor Full-Stack',
     description: 'Portfólio profissional com projetos, skills e experiências em desenvolvimento web full-stack.',
     type: 'website',
   },

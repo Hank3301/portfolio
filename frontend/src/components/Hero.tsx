@@ -23,7 +23,7 @@ export default function Hero() {
           id="hero-title"
           className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white"
         >
-          Henrique Costa
+          Hugo Costa de Souza
           <br />
           <span className="text-transparent bg-clip-text bg-linear-to-r from-indigo-400 via-purple-500 to-pink-500">
             Desenvolvedor Full-Stack
