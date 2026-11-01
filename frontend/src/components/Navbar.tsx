@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -57,7 +58,7 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex md:items-center md:gap-8">
+          <div className="hidden md:flex md:items-center md:gap-6">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -67,6 +68,7 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+            <ThemeToggle />
             <Link
               href="#contact"
               className="hidden md:inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-500 transition-colors"
@@ -117,6 +119,9 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+            <div className="flex items-center justify-center py-2">
+              <ThemeToggle />
+            </div>
             <Link
               href="#contact"
               className="block w-full text-center px-4 py-3 text-base font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-500 transition-colors mt-2"
