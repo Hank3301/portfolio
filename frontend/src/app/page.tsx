@@ -1,6 +1,8 @@
 // src/app/page.tsx
 import Hero from '@/components/Hero';
 import ProjectsGrid from '@/components/ProjectsGrid';
+import Skills from '@/components/Skills';
+import AboutContact from '@/components/AboutContact';
 
 // Constantes de contato — alterar quando tiver os valores reais
 const EMAIL = "TODO";
@@ -22,6 +24,8 @@ export default function Home() {
     <div className="flex min-h-screen flex-col bg-zinc-950 text-zinc-100">
       <Hero />
       <ProjectsGrid />
+      <Skills />
+      <AboutContact />
 
       {/* Footer CTA */}
       <section id="contact" className="py-20 px-4 scroll-mt-20">

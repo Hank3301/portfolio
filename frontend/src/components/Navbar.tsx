@@ -16,10 +16,11 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Removidos #skills e #about (seções ainda não existem)
   const navLinks = [
     { href: '#home', label: 'Início' },
     { href: '#projects', label: 'Projetos' },
+    { href: '#skills', label: 'Skills' },
+    { href: '#about', label: 'Sobre' },
     { href: '#contact', label: 'Contato' },
   ];
 
