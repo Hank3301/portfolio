@@ -43,7 +43,7 @@ export default function Navbar() {
             className="flex items-center gap-2 text-xl font-bold text-white hover:text-zinc-300 transition-colors"
             aria-label="Ir para o início"
           >
-            <span className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600">
+            <span className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-linear-to-br from-indigo-500 to-purple-600">
               <svg
                 className="h-5 w-5 text-white"
                 fill="currentColor"

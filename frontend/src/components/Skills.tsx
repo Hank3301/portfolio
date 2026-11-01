@@ -65,7 +65,7 @@ export default function Skills() {
               </h3>
 
               {/* Skill Badges */}
-              <div className="flex flex-wrap gap-3">
+              <ul className="flex flex-wrap gap-3">
                 {skills[category].map((skill) => (
                   <li
                     key={skill.name}
@@ -73,25 +73,19 @@ export default function Skills() {
                   >
                     {/* Animated gradient border on hover */}
                     <span
-                      className="absolute inset-0 bg-linear-to-r opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                      style={{
-                        background: `linear-gradient(90deg, ${skill.color.split(' ')[0].replace('from-', '')}, ${skill.color.split(' ')[1].replace('to-', '')})`,
-                      }}
+                      className={`absolute inset-0 bg-linear-to-r ${skill.color} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}
                       aria-hidden="true"
                     />
                     <span className="relative z-10 flex items-center gap-2">
                       <span
-                        className="h-2 w-2 rounded-full bg-linear-to-r"
-                        style={{
-                          background: `linear-gradient(90deg, ${skill.color.split(' ')[0].replace('from-', '')}, ${skill.color.split(' ')[1].replace('to-', '')})`,
-                        }}
+                        className={`h-2 w-2 rounded-full bg-linear-to-r ${skill.color}`}
                         aria-hidden="true"
                       />
                       {skill.name}
                     </span>
                   </li>
                 ))}
-              </div>
+              </ul>
             </article>
           ))}
         </div>
