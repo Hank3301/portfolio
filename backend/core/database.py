@@ -10,11 +10,13 @@ from models.base import Base
 
 
 # Engine assíncrono
+# statement_cache_size=0 necessário para pgbouncer (Supabase) que não suporta prepared statements
 engine = create_async_engine(
     settings.DATABASE_URL,
     echo=settings.DEBUG,
     poolclass=NullPool if settings.DEBUG else None,
     pool_pre_ping=True,
+    connect_args={"statement_cache_size": 0},
 )
 
 # Session factory
