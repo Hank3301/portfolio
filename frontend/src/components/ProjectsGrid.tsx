@@ -1,11 +1,7 @@
 // src/components/ProjectsGrid.tsx
-'use client';
-
 import { Suspense } from 'react';
 import ProjectsGridContent from './ProjectsGridContent';
 import ProjectsGridSkeleton from './ProjectsGridSkeleton';
-import { ProjectsErrorBoundary } from './ProjectsErrorBoundary';
-import ProjectsGridError from './ProjectsGridError';
 
 export default function ProjectsGrid() {
   return (
@@ -21,9 +17,7 @@ export default function ProjectsGrid() {
         </header>
 
         <Suspense fallback={<ProjectsGridSkeleton />}>
-          <ProjectsErrorBoundary fallback={<ProjectsGridError />}>
-            <ProjectsGridContent />
-          </ProjectsErrorBoundary>
+          <ProjectsGridContent />
         </Suspense>
       </div>
     </section>

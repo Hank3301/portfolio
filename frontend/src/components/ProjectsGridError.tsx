@@ -1,6 +1,4 @@
 // src/components/ProjectsGridError.tsx
-'use client';
-
 export default function ProjectsGridError() {
   return (
     <div className="text-center py-12" role="alert">

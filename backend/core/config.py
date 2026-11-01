@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     # App
     APP_NAME: str = "Portfolio API"
     APP_VERSION: str = "1.0.0"
-    DEBUG: bool = True
+    DEBUG: bool = False
 
     # Database
     DATABASE_URL: str

@@ -18,10 +18,13 @@ Monorepo com backend (FastAPI) e frontend (Next.js 16 + App Router).
 │   ├── main.py
 │   ├── requirements.txt
 │   └── .env.example
+├── docs/
+│   └── RELATORIO_ALTERACOES.md
 └── frontend/         # Next.js 16 — pronto para Vercel
     ├── src/
     │   ├── app/              # App Router (page.tsx, layout.tsx)
-    │   ├── components/       # Hero, Navbar, ProjectCard, ProjectsGrid
+    │   ├── components/       # Hero, Navbar, Skills, AboutContact, ProjectsGrid, ProjectsGridContent, ProjectsGridError, ProjectsGridEmpty, ProjectsGridSkeleton
+    │   ├── lib/              # contact.ts (constantes centralizadas)
     │   └── services/         # api.ts (tipos + fetchProjects)
     ├── public/
     ├── package.json
@@ -67,13 +70,17 @@ npm run dev
 | Variável | Descrição |
 |----------|-----------|
 | `DATABASE_URL` | PostgreSQL (Supabase pooler) |
-| `SUPABASE_URL` | URL do projeto Supabase |
-| `SUPABASE_KEY` | Service role key do Supabase |
+| `SUPABASE_URL` | **Não usada pelo código atual** |
+| `SUPABASE_KEY` | **Não usada pelo código atual** |
 | `SECRET_KEY` | Chave secreta para JWT (32+ chars) |
 | `ADMIN_USERNAME` | Usuário admin |
 | `ADMIN_PASSWORD_HASH` | Hash bcrypt da senha |
 | `GITHUB_USERNAME` | Username GitHub para integração |
 | `PYTHON_VERSION` | `3.11.9` (fixo no Render) |
+| `DEBUG` | Modo debug (padrão: `true` dev, `false` produção) |
+| `ALLOWED_ORIGINS` | Lista JSON de origens CORS permitidas (ex: `["https://seu-dominio.vercel.app"]`) |
+| `GITHUB_TOKEN` | (Opcional) Token GitHub para integração |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | Expiração do token JWT em minutos (padrão: 10080 = 7 dias) |
 
 ### Frontend (`frontend/.env.local`)
 | Variável | Descrição |
@@ -120,7 +127,8 @@ uvicorn main:app --host 0.0.0.0 --port 8000  # produção local
 ## Próximos Passos (Frontend)
 
 - [x] Hero Section + Grid de Projetos
-- [ ] Seção Skills
+- [x] Seção Skills
+- [x] Seção AboutContact (Sobre Mim + Contato)
 - [ ] Deploy na Vercel
 - [ ] Login Admin + Dashboard (rotas protegidas JWT)
 
