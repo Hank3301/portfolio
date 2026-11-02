@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { SmoothScrollProvider } from "@/components/SmoothScrollProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,20 +39,22 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`} suppressHydrationWarning>
       <body className="min-h-full flex flex-col bg-zinc-950 text-zinc-100">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <Navbar />
-          <main className="flex-1 pt-16">{children}</main>
-          <footer className="border-t border-zinc-800 py-8">
-            <div className="mx-auto max-w-7xl px-4 text-center text-sm text-zinc-500">
-              © {new Date().getFullYear()} Hugo Costa de Souza. Todos os direitos reservados.
-            </div>
-          </footer>
-        </ThemeProvider>
+        <SmoothScrollProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <Navbar />
+            <main className="flex-1 pt-16">{children}</main>
+            <footer className="border-t border-zinc-800 py-8">
+              <div className="mx-auto max-w-7xl px-4 text-center text-sm text-zinc-500">
+                © {new Date().getFullYear()} Hugo Costa de Souza. Todos os direitos reservados.
+              </div>
+            </footer>
+          </ThemeProvider>
+        </SmoothScrollProvider>
       </body>
     </html>
   );
