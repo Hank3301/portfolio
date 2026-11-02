@@ -1,80 +1,155 @@
-// src/components/Hero.tsx
-import Link from 'next/link';
-import { ScrollReveal, StaggerContainer, StaggerItem } from '@/components/ScrollReveal';
+import {useEffect, useRef} from 'react';
+import {hero} from '../content';
+import {useReducedMotion} from '../hooks/useReducedMotion';
+import {useFitText} from '../hooks/useFitText';
+import {easeOutCubic, lerp, pinProgress, range} from '../lib/math';
+import {onFrame} from '../lib/scroll';
 
-export default function Hero() {
+const STAGE_VH = 380;
+
+export function Hero() {
+  const rootRef = useRef<HTMLElement>(null);
+  const subtitleRef = useRef<HTMLParagraphElement>(null);
+  const taglineRef = useRef<HTMLParagraphElement>(null);
+  const hudRef = useRef<HTMLDivElement>(null);
+  const clockRef = useRef<HTMLParagraphElement>(null);
+  const statusRef = useRef<HTMLSpanElement>(null);
+  const reduced = useReducedMotion();
+  const reducedRef = useRef(reduced);
+  reducedRef.current = reduced;
+  const titleFit = useFitText<HTMLDivElement>();
+
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const c = canvasRef.current!;
+    const sync = () => {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      c.width = Math.round(c.clientWidth * dpr);
+      c.height = Math.round(c.clientHeight * dpr);
+    };
+    sync();
+    const ro = new ResizeObserver(sync);
+    ro.observe(c);
+    return () => ro.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const canvas = canvasRef.current!;
+    const ctx = canvas.getContext('2d')!;
+    let seed = 11;
+    const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    const tokens = ['{', '}', '[', ']', '()', '=>', 'fn', 'struct', 'async', 'await', 'mut', 'ref', 'Box', 'Arc', 'Result', 'Option'];
+    const particles = Array.from({length: 80}, () => ({
+      x: rand(),
+      y: rand(),
+      token: tokens[Math.floor(rand() * tokens.length)],
+      size: 0.5 + rand() * 0.8,
+      speed: 0.15 + rand() * 0.35,
+      opacity: 0.15 + rand() * 0.4,
+    }));
+    let lastTime = 0;
+
+    return onFrame((time) => {
+      const dt = lastTime ? Math.min(0.1, (time - lastTime) / 1000) : 1 / 60;
+      lastTime = time;
+      const root = rootRef.current;
+      if (!root) return;
+      const {p, rect} = pinProgress(root);
+      if (rect.bottom < 0) return;
+
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
+      const dpr = canvas.width / Math.max(1, w);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+      ctx.font = `${12 * dpr}px "IBM Plex Mono", monospace`;
+      ctx.fillStyle = '#00ff88';
+
+      for (const pt of particles) {
+        if (!reducedRef.current) {
+          pt.y -= pt.speed * dt * 0.3;
+          pt.x += (Math.sin(time * 0.001 + pt.y * 10) * 0.0005);
+          if (pt.y < -0.1) pt.y = 1.1;
+          if (pt.x < -0.1) pt.x = 1.1;
+          if (pt.x > 1.1) pt.x = -0.1;
+        }
+        ctx.globalAlpha = pt.opacity * (1 - range(p, 0, 0.5));
+        ctx.fillText(pt.token, pt.x * w, pt.y * h);
+      }
+      ctx.globalAlpha = 1;
+    });
+  }, []);
+
+  useEffect(() => {
+    let lastP = -1;
+    return onFrame((_time) => {
+      const root = rootRef.current;
+      if (!root) return;
+      const {p, rect} = pinProgress(root);
+      if (rect.bottom < 0) return;
+      if (Math.abs(p - lastP) < 0.00005) return;
+      lastP = p;
+
+      const exit = range(p, 0.65, 1);
+
+      const tIn = easeOutCubic(range(p, 0.05, 0.25));
+      const tOut = range(p, 0.45, 0.55);
+      const title = titleFit.current!;
+      title.style.opacity = String(tIn * (1 - tOut));
+      title.style.transform = `translate3d(0, ${-p * 8}vh, 0)`;
+      title.style.letterSpacing = `${lerp(0.5, 0.16, tIn)}em`;
+
+      // Subtitle & tagline animations (keep these)
+      const subIn = easeOutCubic(range(p, 0.12, 0.35));
+      subtitleRef.current!.style.opacity = String(subIn * (1 - tOut));
+      subtitleRef.current!.style.transform = `translate3d(0, ${-p * 6}vh, 0)`;
+
+      const tagIn = easeOutCubic(range(p, 0.2, 0.45));
+      taglineRef.current!.style.opacity = String(tagIn * (1 - exit));
+      taglineRef.current!.style.transform = `translate3d(0, ${-p * 4}vh, 0)`;
+
+      canvasRef.current!.style.opacity = String(1 - range(p, 0, 0.5));
+
+      hudRef.current!.style.opacity = String(range(p, 0.05, 0.15) * (1 - range(p, 0.6, 0.7)));
+      const secs = p * 5400;
+      clockRef.current!.textContent = `UPTIME ${String(Math.floor(secs / 3600)).padStart(2, '0')}:${String(Math.floor((secs % 3600) / 60)).padStart(2, '0')}:${String(Math.floor(secs % 60)).padStart(2, '0')}`;
+      statusRef.current!.textContent = range(p, 0.3, 0.6) > 0.5 ? 'PROCESSING' : 'IDLE';
+    });
+  }, []);
+
   return (
-    <section
-      id="home"
-      className="relative min-h-[85vh] flex items-center justify-center px-4 overflow-hidden bg-radial from-indigo-500/10 via-transparent to-transparent"
-      aria-labelledby="hero-title"
-    >
-      <div className="relative max-w-5xl mx-auto w-full text-center space-y-8">
-        {/* Badge */}
-        <ScrollReveal delay={0.1} direction="up">
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/10 text-indigo-300 text-sm font-medium border border-indigo-500/20">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500" />
-            </span>
-            Disponível para oportunidades
-          </span>
-        </ScrollReveal>
-
-        {/* Title */}
-        <ScrollReveal delay={0.2} direction="up">
-          <h1
-            id="hero-title"
-            className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white"
-          >
-            Hugo Costa de Souza
-            <br />
-            <span className="text-transparent bg-clip-text bg-linear-to-r from-indigo-400 via-purple-500 to-pink-500">
-              Desenvolvedor Full-Stack
-            </span>
-          </h1>
-        </ScrollReveal>
-
-        {/* Subtitle */}
-        <ScrollReveal delay={0.3} direction="up">
-          <p className="text-lg sm:text-xl text-zinc-300 max-w-2xl mx-auto leading-relaxed">
-            Construo aplicações escaláveis com <strong>React, Next.js, Python & FastAPI</strong>.
-            Do banco de dados à interface: arquitetura limpa e deploy contínuo.
-          </p>
-        </ScrollReveal>
-
-        {/* CTAs */}
-        <StaggerContainer delay={0.4} stagger={0.1}>
-          <StaggerItem>
-            <Link
-              href="#projects"
-              className="group inline-flex items-center gap-2 px-8 py-3.5 text-base font-semibold text-white bg-indigo-600 rounded-xl hover:bg-indigo-500 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-zinc-950"
-            >
-              Ver Projetos
-              <svg className="group-hover:translate-x-1 transition-transform h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-            </Link>
-          </StaggerItem>
-
-          <StaggerItem>
-            <Link
-              href="#contact"
-              className="inline-flex items-center gap-2 px-8 py-3.5 text-base font-semibold text-zinc-100 bg-zinc-800 rounded-xl border border-zinc-700 hover:bg-zinc-700 hover:border-zinc-600 transition-colors focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 focus:ring-offset-zinc-950"
-            >
-              Entrar em Contato
-            </Link>
-          </StaggerItem>
-        </StaggerContainer>
-
-        {/* Scroll indicator */}
-        <ScrollReveal delay={0.8} direction="up">
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce" aria-hidden="true">
-            <svg className="h-6 w-6 text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-            </svg>
+    <section id="top" ref={rootRef} aria-label="Hero" className="relative" style={{height: `${STAGE_VH}svh`}}>
+      <div className="sticky top-0 h-screen-s overflow-hidden bg-void">
+        <div className="absolute inset-0" aria-hidden="true" style={{
+          backgroundImage: `
+            linear-gradient(rgba(0,255,136,0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0,255,136,0.03) 1px, transparent 1px)
+          `,
+          backgroundSize: '40px 40px',
+        }} />
+        <canvas ref={canvasRef} aria-hidden="true" className="pointer-events-none absolute inset-0 size-full" />
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
+          <div ref={titleFit} className="font-display text-hero text-white [text-shadow:0_4px_40px_rgba(0,255,136,0.3)] whitespace-nowrap" style={{marginRight: '-0.16em', opacity: 0}}>
+            {hero.title}
           </div>
-        </ScrollReveal>
+          <p ref={subtitleRef} className="mt-4 font-mono text-display text-terminal/90 uppercase tracking-[0.12em]" style={{opacity: 0}}>{hero.subtitle}</p>
+          <p ref={taglineRef} className="mt-6 max-w-[38rem] text-lead text-regolith/70" style={{opacity: 0}}>{hero.tagline}</p>
+        </div>
+        <div ref={hudRef} aria-hidden="true" className="pointer-events-none absolute inset-4 font-mono text-[0.625rem] tracking-[0.14em] text-regolith/75 uppercase sm:inset-6 md:text-label" style={{opacity: 0}}>
+          <div className="brackets absolute inset-0 text-regolith/40" />
+          <div className="absolute top-16 left-3 space-y-1 md:top-20 md:left-4">
+            <p ref={clockRef}>UPTIME 00:00:00</p>
+            <p className="text-regolith/50">System clock</p>
+          </div>
+          <div className="absolute top-16 right-3 space-y-1 text-right md:top-20 md:right-4">
+            <p>Status <span ref={statusRef} className="text-terminal">IDLE</span></p>
+            <p className="text-regolith/50">Worker pool</p>
+          </div>
+          <div className="absolute bottom-3 left-3 md:bottom-4 md:left-4">{hero.location}</div>
+          <div className="absolute right-3 bottom-3 flex items-center gap-2 md:right-4 md:bottom-4">
+            Scroll <span className="inline-block animate-bounce motion-reduce:animate-none text-terminal">↓</span>
+          </div>
+        </div>
       </div>
     </section>
   );
