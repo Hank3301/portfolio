@@ -1,6 +1,4 @@
 // src/components/ProjectsGrid.tsx
-'use client';
-
 import { Suspense } from 'react';
 import { ScrollReveal } from '@/components/ScrollReveal';
 import ProjectsGridContent from './ProjectsGridContent';
