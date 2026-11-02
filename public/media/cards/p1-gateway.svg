@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <defs>
+    <linearGradient id="bg1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#05070c"/>
+      <stop offset="100%" stop-color="#0b0f18"/>
+    </linearGradient>
+    <linearGradient id="accent1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00ff88"/>
+      <stop offset="100%" stop-color="#00cc6a"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#bg1)"/>
+  <rect x="40" y="40" width="720" height="520" fill="none" stroke="url(#accent1)" stroke-width="1" stroke-opacity="0.2" rx="8"/>
+  <text x="400" y="260" font-family="Michroma, sans-serif" font-size="48" fill="#00ff88" text-anchor="middle" letter-spacing="0.12em">PAYMENT GATEWAY</text>
+  <text x="400" y="320" font-family="IBM Plex Mono, monospace" font-size="16" fill="#c9ccd3" text-anchor="middle">Go • PostgreSQL • Kafka • k8s</text>
+  <g stroke="#00ff88" stroke-opacity="0.05" stroke-width="1">
+    <line x1="100" y1="380" x2="700" y2="380"/>
+    <line x1="100" y1="420" x2="700" y2="420"/>
+    <line x1="100" y1="460" x2="700" y2="460"/>
+  </g>
+  <circle cx="400" cy="420" r="60" fill="none" stroke="url(#accent1)" stroke-width="2" stroke-dasharray="8 4"/>
+  <text x="400" y="425" font-family="IBM Plex Mono, monospace" font-size="14" fill="#00ff88" text-anchor="middle">50k+ req/s</text>
+</svg>

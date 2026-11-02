@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <defs>
+    <linearGradient id="bg2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#05070c"/>
+      <stop offset="100%" stop-color="#0b0f18"/>
+    </linearGradient>
+    <linearGradient id="accent2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00ff88"/>
+      <stop offset="100%" stop-color="#00cc6a"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#bg2)"/>
+  <rect x="40" y="40" width="720" height="520" fill="none" stroke="url(#accent2)" stroke-width="1" stroke-opacity="0.2" rx="8"/>
+  <text x="400" y="260" font-family="Michroma, sans-serif" font-size="48" fill="#00ff88" text-anchor="middle" letter-spacing="0.12em">ETL PIPELINE</text>
+  <text x="400" y="320" font-family="IBM Plex Mono, monospace" font-size="16" fill="#c9ccd3" text-anchor="middle">Python • Airflow • ClickHouse • Redis</text>
+  <g stroke="#00ff88" stroke-opacity="0.05" stroke-width="1">
+    <line x1="100" y1="380" x2="700" y2="380"/>
+    <line x1="100" y1="420" x2="700" y2="420"/>
+    <line x1="100" y1="460" x2="700" y2="460"/>
+  </g>
+  <path d="M200 420 L300 380 L400 420 L500 380 L600 420" fill="none" stroke="url(#accent2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="300" cy="380" r="6" fill="#00ff88"/>
+  <circle cx="400" cy="420" r="6" fill="#00ff88"/>
+  <circle cx="500" cy="380" r="6" fill="#00ff88"/>
+  <text x="400" y="480" font-family="IBM Plex Mono, monospace" font-size="14" fill="#00ff88" text-anchor="middle">Self-healing DAGs</text>
+</svg>

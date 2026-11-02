@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <defs>
+    <linearGradient id="bg4" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#05070c"/>
+      <stop offset="100%" stop-color="#0b0f18"/>
+    </linearGradient>
+    <linearGradient id="accent4" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00ff88"/>
+      <stop offset="100%" stop-color="#00cc6a"/>
+    </linearGradient>
+    <radialGradient id="glow4" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#00ff88" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#00ff88" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#bg4)"/>
+  <rect x="40" y="40" width="720" height="520" fill="none" stroke="url(#accent4)" stroke-width="1" stroke-opacity="0.2" rx="8"/>
+  <text x="400" y="260" font-family="Michroma, sans-serif" font-size="48" fill="#00ff88" text-anchor="middle" letter-spacing="0.12em">AI AGENTS</text>
+  <text x="400" y="320" font-family="IBM Plex Mono, monospace" font-size="16" fill="#c9ccd3" text-anchor="middle">TypeScript • LangGraph • PostgreSQL • WS</text>
+  <g stroke="#00ff88" stroke-opacity="0.05" stroke-width="1">
+    <line x1="100" y1="380" x2="700" y2="380"/>
+    <line x1="100" y1="420" x2="700" y2="420"/>
+    <line x1="100" y1="460" x2="700" y2="460"/>
+  </g>
+  <circle cx="400" cy="400" r="80" fill="url(#glow4)"/>
+  <circle cx="400" cy="400" r="50" fill="none" stroke="url(#accent4)" stroke-width="1.5" stroke-dasharray="6 6"/>
+  <circle cx="280" cy="320" r="25" fill="#05070c" stroke="url(#accent4)" stroke-width="2"/>
+  <circle cx="520" cy="320" r="25" fill="#05070c" stroke="url(#accent4)" stroke-width="2"/>
+  <circle cx="400" cy="500" r="25" fill="#05070c" stroke="url(#accent4)" stroke-width="2"/>
+  <line x1="400" y1="370" x2="290" y2="340" stroke="url(#accent4)" stroke-width="1.5" stroke-opacity="0.6"/>
+  <line x1="400" y1="370" x2="510" y2="340" stroke="url(#accent4)" stroke-width="1.5" stroke-opacity="0.6"/>
+  <line x1="400" y1="430" x2="400" y2="480" stroke="url(#accent4)" stroke-width="1.5" stroke-opacity="0.6"/>
+  <text x="400" y="410" font-family="IBM Plex Mono, monospace" font-size="12" fill="#00ff88" text-anchor="middle">SUPERVISOR</text>
+</svg>
