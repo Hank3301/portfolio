@@ -1,7 +1,7 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { ReactNode } from 'react';
+import { motion, HTMLMotionProps } from 'framer-motion';
+import { ReactNode, isValidElement, cloneElement, Children, CSSProperties } from 'react';
 
 interface ScrollRevealProps {
   children: ReactNode;
@@ -9,6 +9,7 @@ interface ScrollRevealProps {
   delay?: number;
   direction?: 'up' | 'down' | 'left' | 'right';
   once?: boolean;
+  stagger?: number;
 }
 
 const directionVariants = {
@@ -24,7 +25,10 @@ export function ScrollReveal({
   delay = 0,
   direction = 'up',
   once = true,
+  stagger = 0,
 }: ScrollRevealProps) {
+  const childArray = Children.toArray(children);
+
   return (
     <motion.div
       className={className}
@@ -32,10 +36,18 @@ export function ScrollReveal({
       whileInView="visible"
       viewport={{ once, margin: '-100px' }}
       variants={directionVariants[direction]}
-      animate="visible"
-      transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94], delay }}
+      transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94], delay }}
     >
-      {children}
+      {childArray.map((child, index) => {
+        if (!isValidElement(child)) return child;
+        const childProps = child.props as { style?: CSSProperties };
+        const style: CSSProperties = {
+          ...(childProps.style || {}),
+          transitionDelay: `${delay + index * stagger}s`,
+        };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return cloneElement(child, { style } as any);
+      })}
     </motion.div>
   );
 }
@@ -90,6 +102,36 @@ export function StaggerItem({
           transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94], delay },
         },
       }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+// Novo componente FadeIn simplificado para uso direto
+export function FadeIn({
+  children,
+  className = '',
+  delay = 0,
+  direction: dir = 'up',
+  once = true,
+  ...props
+}: {
+  children: ReactNode;
+  className?: string;
+  delay?: number;
+  direction?: 'up' | 'down' | 'left' | 'right';
+  once?: boolean;
+} & Omit<HTMLMotionProps<'div'>, 'initial' | 'animate' | 'variants' | 'viewport' | 'transition'>) {
+  return (
+    <motion.div
+      className={className}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once, margin: '-100px' }}
+      variants={directionVariants[dir]}
+      transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94], delay }}
+      {...props}
     >
       {children}
     </motion.div>
