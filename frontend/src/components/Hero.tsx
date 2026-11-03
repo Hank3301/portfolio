@@ -18,7 +18,7 @@ export function Hero() {
   const reducedRef = useRef(reduced);
   reducedRef.current = reduced;
   const titleFit = useFitText<HTMLDivElement>();
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -89,6 +89,23 @@ export function Hero() {
   }, []);
 
   useEffect(() => {
+    // Cleanup inline styles when switching to mobile (prevents desktop inline styles overriding CSS animations)
+    if (isMobile) {
+      const title = titleFit.current;
+      const subtitle = subtitleRef.current;
+      if (title) {
+        title.style.opacity = '';
+        title.style.transform = '';
+        title.style.letterSpacing = '';
+      }
+      if (subtitle) {
+        subtitle.style.opacity = '';
+        subtitle.style.transform = '';
+      }
+    }
+  }, [isMobile]);
+
+  useEffect(() => {
     let lastP = -1;
     return onFrame((_time) => {
       const root = rootRef.current;
@@ -98,26 +115,31 @@ export function Hero() {
       if (Math.abs(p - lastP) < 0.00005) return;
       lastP = p;
 
-      // Mobile: titles visible immediately, faster animation
-      const tInStart = isMobile ? 0 : 0.05;
-      const tInEnd = isMobile ? 0.1 : 0.25;
-      const tOutStart = isMobile ? 0.8 : 0.45;
-      const tOutEnd = isMobile ? 0.9 : 0.55;
+      // Mobile: no scroll-based opacity/letterSpacing/transform for title/subtitle
+      // Desktop: keep existing behavior
+      if (!isMobile) {
+        const tInStart = 0.05;
+        const tInEnd = 0.25;
+        const tOutStart = 0.45;
+        const tOutEnd = 0.55;
 
-      const tIn = easeOutCubic(range(p, tInStart, tInEnd));
-      const tOut = range(p, tOutStart, tOutEnd);
-      const title = titleFit.current!;
-      title.style.opacity = String(tIn * (1 - tOut));
-      title.style.transform = `translate3d(0, ${-p * (isMobile ? 4 : 8)}vh, 0)`;
-      title.style.letterSpacing = `${lerp(0.5, 0.16, tIn)}em`;
+        const tIn = easeOutCubic(range(p, tInStart, tInEnd));
+        const tOut = range(p, tOutStart, tOutEnd);
+        const title = titleFit.current!;
+        title.style.opacity = String(tIn * (1 - tOut));
+        title.style.transform = `translate3d(0, ${-p * 8}vh, 0)`;
+        title.style.letterSpacing = `${lerp(0.5, 0.16, tIn)}em`;
 
-      // Subtitle animation
-      const subIn = easeOutCubic(range(p, isMobile ? 0.05 : 0.12, isMobile ? 0.15 : 0.35));
-      subtitleRef.current!.style.opacity = String(subIn * (1 - tOut));
-      subtitleRef.current!.style.transform = `translate3d(0, ${-p * (isMobile ? 3 : 6)}vh, 0)`;
+        // Subtitle animation (desktop)
+        const subIn = easeOutCubic(range(p, 0.12, 0.35));
+        subtitleRef.current!.style.opacity = String(subIn * (1 - tOut));
+        subtitleRef.current!.style.transform = `translate3d(0, ${-p * 6}vh, 0)`;
+      }
 
+      // Canvas fade (both mobile and desktop)
       canvasRef.current!.style.opacity = String(1 - range(p, 0, 0.5));
 
+      // HUD (both mobile and desktop)
       hudRef.current!.style.opacity = String(range(p, 0.05, 0.15) * (1 - range(p, 0.6, 0.7)));
       const secs = p * 5400;
       clockRef.current!.textContent = `UPTIME ${String(Math.floor(secs / 3600)).padStart(2, '0')}:${String(Math.floor((secs % 3600) / 60)).padStart(2, '0')}:${String(Math.floor(secs % 60)).padStart(2, '0')}`;
@@ -137,10 +159,10 @@ export function Hero() {
         }} />
         <canvas ref={canvasRef} aria-hidden="true" className="pointer-events-none absolute inset-0 size-full" />
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
-          <div ref={titleFit} className="font-display text-hero text-white [text-shadow:0_4px_40px_rgba(0,255,136,0.3)] whitespace-nowrap" style={{marginRight: '-0.16em', opacity: isMobile ? 1 : 0}}>
+          <div ref={titleFit} className="font-display text-hero text-white [text-shadow:0_4px_40px_rgba(0,255,136,0.3)] whitespace-nowrap hero-title" style={{marginRight: '-0.16em'}}>
             {hero.title}
           </div>
-          <p ref={subtitleRef} className="mt-4 font-mono text-display text-terminal/90 uppercase tracking-[0.12em]" style={{opacity: isMobile ? 1 : 0}}>{hero.subtitle}</p>
+          <p ref={subtitleRef} className="mt-4 font-mono text-display text-terminal/90 uppercase tracking-[0.12em] hero-subtitle">{hero.subtitle}</p>
         </div>
         <div ref={hudRef} aria-hidden="true" className="pointer-events-none absolute inset-4 font-mono text-[0.625rem] tracking-[0.14em] text-regolith/75 uppercase sm:inset-6 md:text-label" style={{opacity: isMobile ? 1 : 0}}>
           <div className="brackets absolute inset-0 text-regolith/40" />
