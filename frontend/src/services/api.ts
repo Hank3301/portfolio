@@ -97,7 +97,9 @@ export const UISchema = z.object({
   title: z.string(),
   body: z.string(),
   stack: z.array(z.string()),
-  link: z.string(),
+  link: z.string().nullable(),
+  liveUrl: z.string().nullable(),
+  githubUrl: z.string().nullable(),
   image: z.string(),
 });
 
@@ -129,6 +131,34 @@ export class ApiError extends Error {
     }
     return new ApiError('http', status, 'Erro na resposta da API', err);
   }
+
+  static fromResponse(status: number, body: string): ApiError {
+    let message = 'Erro na resposta da API';
+    try {
+      const parsed = JSON.parse(body);
+      if (typeof parsed.detail === 'string') {
+        message = parsed.detail;
+      } else if (Array.isArray(parsed.detail)) {
+        // FastAPI 422 validation errors: include field names from loc
+        message = parsed.detail
+          .map((e: {msg?: string; loc?: (string | number)[]; type?: string}) => {
+            const field = Array.isArray(e.loc) ? e.loc.join('.') : '';
+            const prefix = field ? `${field}: ` : '';
+            return `${prefix}${e.msg ?? e.type ?? 'Erro de validação'}`;
+          })
+          .join('; ');
+      } else if (parsed.message) {
+        message = parsed.message;
+      } else if (parsed.error) {
+        message = parsed.error;
+      }
+    } catch {
+      // Not JSON, use status text fallback
+    }
+    // 401 generic: don't override with login-specific message here.
+    // loginAdmin uses fromResponse and the backend already returns "Usuário ou senha incorretos" in detail.
+    return new ApiError('http', status, message);
+  }
 }
 
 // ============================================
@@ -138,6 +168,28 @@ export class ApiError extends Error {
 const API_BASE = import.meta.env.VITE_API_URL || 'https://portfolio-api-hank.onrender.com/api';
 const DEFAULT_TIMEOUT_MS = 60_000;
 
+function buildHeaders(options?: RequestInit): Record<string, string> {
+  const headers: Record<string, string> = {};
+  const hasBody = options?.body != null && options?.body !== '';
+  if (hasBody) {
+    headers['Content-Type'] = 'application/json';
+  }
+  if (options?.headers) {
+    Object.assign(headers, options.headers);
+  }
+  return headers;
+}
+
+async function parseJsonSafe<T>(res: Response): Promise<{success: boolean; data?: T; raw: string}> {
+  const raw = await res.text().catch(() => '');
+  try {
+    const data = raw ? (JSON.parse(raw) as T) : (undefined as T);
+    return {success: true, data, raw};
+  } catch {
+    return {success: false, raw};
+  }
+}
+
 async function fetchWithTimeout<T>(
   endpoint: string,
   options?: RequestInit,
@@ -146,24 +198,27 @@ async function fetchWithTimeout<T>(
   const timeoutId = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
 
   try {
+    // Spread options FIRST, then override headers and signal so caller can customize
     const res = await fetch(`${API_BASE}${endpoint}`, {
-      headers: {
-        'Content-Type': 'application/json',
-        ...options?.headers,
-      },
-      signal: controller.signal,
       ...options,
+      headers: buildHeaders(options),
+      signal: controller.signal,
     });
 
     clearTimeout(timeoutId);
 
     if (!res.ok) {
-      const text = await res.text().catch(() => '');
-      throw new ApiError('http', res.status, text || res.statusText);
+      const {raw: body} = await parseJsonSafe(res);
+      throw ApiError.fromResponse(res.status, body);
     }
 
     if (res.status === 204) return undefined as T;
-    return res.json() as Promise<T>;
+
+    const {success, data, raw: _raw} = await parseJsonSafe<T>(res);
+    if (!success) {
+      throw new ApiError('format', res.status, 'Resposta não é JSON válido');
+    }
+    return data!;
   } catch (err) {
     clearTimeout(timeoutId);
     if (err instanceof ApiError) throw err;
@@ -220,12 +275,10 @@ function authHeaders(): Record<string, string> {
 }
 
 export async function adminLogin(password: string): Promise<{token: string}> {
-  const res = await fetchWithTimeout<{token: string}>('/admin/login', {
+  return fetchWithTimeout<{token: string}>('/admin/login', {
     method: 'POST',
     body: JSON.stringify({password}),
   });
-  setAdminToken(res.token);
-  return res;
 }
 
 export async function adminLogout(): Promise<void> {
@@ -285,11 +338,13 @@ export async function deleteSkill(id: number): Promise<void> {
 function mapApiProjectToUI(api: ApiProject): UIProject {
   return {
     id: api.id,
-    tag: api.tech_stack[0] ?? 'outro',
+    tag: api.tech_stack[0] ?? '',
     title: api.title,
     body: api.description,
     stack: api.tech_stack,
-    link: api.live_url ?? api.github_url ?? '#',
+    link: api.live_url ?? api.github_url ?? null,
+    liveUrl: api.live_url,
+    githubUrl: api.github_url,
     image: `/media/cards/m${((Math.abs(hashCode(api.id)) % 4) + 1)}.webp`,
   };
 }
@@ -310,6 +365,7 @@ export async function listProjects(): Promise<{projects: UIProject[]; total: num
   if (!parsed.success) {
     throw new ApiError('format', null, 'Formato de resposta inválido da API');
   }
+  // total pode ser > 100; listProjects devolve a primeira página e o total real
   return {
     projects: parsed.data.items.map(mapApiProjectToUI),
     total: parsed.data.total,
@@ -321,22 +377,20 @@ export async function loginAdmin(username: string, password: string): Promise<To
   formData.append('username', username);
   formData.append('password', password);
 
-  const res = await fetch(`${API_BASE}/auth/login`, {
+  // Reuse fetchWithTimeout; caller headers (form-urlencoded) override JSON
+  const res = await fetchWithTimeout<TokenResponse>('/auth/login', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
+    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
     body: formData.toString(),
   });
 
-  if (!res.ok) {
-    const text = await res.text().catch(() => '');
-    throw new ApiError('http', res.status, text || 'Credenciais inválidas');
+  // Validate with zod; fail if not matching TokenResponseSchema
+  const parsed = TokenResponseSchema.safeParse(res);
+  if (!parsed.success) {
+    throw new ApiError('format', null, 'Resposta de login inválida');
   }
-
-  const data = TokenResponseSchema.parse(await res.json());
-  setAdminToken(data.access_token);
-  return data;
+  setAdminToken(parsed.data.access_token);
+  return parsed.data;
 }
 
 export async function getCurrentAdmin(): Promise<CurrentAdmin> {
@@ -344,10 +398,14 @@ export async function getCurrentAdmin(): Promise<CurrentAdmin> {
   if (!token) {
     throw new ApiError('http', 401, 'Não autenticado');
   }
-
-  return fetchWithTimeout<CurrentAdmin>('/auth/me', {
+  const response = await fetchWithTimeout<CurrentAdmin>('/auth/me', {
     headers: {Authorization: `Bearer ${token}`},
   });
+  const parsed = CurrentAdminSchema.safeParse(response);
+  if (!parsed.success) {
+    throw new ApiError('format', null, 'Formato de resposta /auth/me inválido');
+  }
+  return parsed.data;
 }
 
 export async function createProjectApi(data: {
