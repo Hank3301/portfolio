@@ -10,13 +10,16 @@ from models.base import Base
 
 
 # Engine assíncrono
-# NullPool necessário para pgbouncer (Supabase) que não suporta prepared statements
-# statement_cache_size=0 desabilita prepared statements
+# NullPool + statement_cache_size=0 + prepared_statement_cache_size=0
+# necessários para pgbouncer (Supabase) em transaction mode
 engine = create_async_engine(
     settings.DATABASE_URL,
     echo=settings.DEBUG,
     poolclass=NullPool,
-    connect_args={"statement_cache_size": 0},
+    connect_args={
+        "statement_cache_size": 0,
+        "prepared_statement_cache_size": 0,
+    },
 )
 
 # Session factory
