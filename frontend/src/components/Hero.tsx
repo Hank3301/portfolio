@@ -10,7 +10,6 @@ const STAGE_VH = 380;
 export function Hero() {
   const rootRef = useRef<HTMLElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
-  const taglineRef = useRef<HTMLParagraphElement>(null);
   const hudRef = useRef<HTMLDivElement>(null);
   const clockRef = useRef<HTMLParagraphElement>(null);
   const statusRef = useRef<HTMLSpanElement>(null);
@@ -90,8 +89,6 @@ export function Hero() {
       if (Math.abs(p - lastP) < 0.00005) return;
       lastP = p;
 
-      const exit = range(p, 0.65, 1);
-
       const tIn = easeOutCubic(range(p, 0.05, 0.25));
       const tOut = range(p, 0.45, 0.55);
       const title = titleFit.current!;
@@ -99,14 +96,10 @@ export function Hero() {
       title.style.transform = `translate3d(0, ${-p * 8}vh, 0)`;
       title.style.letterSpacing = `${lerp(0.5, 0.16, tIn)}em`;
 
-      // Subtitle & tagline animations (keep these)
+      // Subtitle animation
       const subIn = easeOutCubic(range(p, 0.12, 0.35));
       subtitleRef.current!.style.opacity = String(subIn * (1 - tOut));
       subtitleRef.current!.style.transform = `translate3d(0, ${-p * 6}vh, 0)`;
-
-      const tagIn = easeOutCubic(range(p, 0.2, 0.45));
-      taglineRef.current!.style.opacity = String(tagIn * (1 - exit));
-      taglineRef.current!.style.transform = `translate3d(0, ${-p * 4}vh, 0)`;
 
       canvasRef.current!.style.opacity = String(1 - range(p, 0, 0.5));
 
@@ -133,7 +126,6 @@ export function Hero() {
             {hero.title}
           </div>
           <p ref={subtitleRef} className="mt-4 font-mono text-display text-terminal/90 uppercase tracking-[0.12em]" style={{opacity: 0}}>{hero.subtitle}</p>
-          <p ref={taglineRef} className="mt-6 max-w-[38rem] text-lead text-regolith/70" style={{opacity: 0}}>{hero.tagline}</p>
         </div>
         <div ref={hudRef} aria-hidden="true" className="pointer-events-none absolute inset-4 font-mono text-[0.625rem] tracking-[0.14em] text-regolith/75 uppercase sm:inset-6 md:text-label" style={{opacity: 0}}>
           <div className="brackets absolute inset-0 text-regolith/40" />
@@ -145,7 +137,6 @@ export function Hero() {
             <p>Status <span ref={statusRef} className="text-terminal">IDLE</span></p>
             <p className="text-regolith/50">Worker pool</p>
           </div>
-          <div className="absolute bottom-3 left-3 md:bottom-4 md:left-4">{hero.location}</div>
           <div className="absolute right-3 bottom-3 flex items-center gap-2 md:right-4 md:bottom-4">
             Scroll <span className="inline-block animate-bounce motion-reduce:animate-none text-terminal">↓</span>
           </div>

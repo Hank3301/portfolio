@@ -33,9 +33,6 @@ export function Header() {
               {item.label}
             </a>
           ))}
-          <a href="#contact" onClick={(e) => go(e)} className="rounded-[4px] bg-white px-4 py-2.5 font-mono text-label text-void uppercase transition-colors hover:bg-terminal">
-            Work together
-          </a>
         </nav>
         <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} aria-controls="menu" className="font-mono text-label uppercase md:hidden">
           {open ? 'Close' : 'Menu'}
@@ -59,7 +56,7 @@ export function Footer() {
       <div className="flex flex-col gap-4 font-mono text-label text-regolith/50 uppercase md:flex-row md:items-center md:justify-between">
         <span className="flex items-center gap-2.5 text-white/80">
           <Logo className="size-4" />
-          {brand.handle} · Backend Engineer
+          {brand.handle} · Desenvolvedor Backend
         </span>
         <span>© {new Date().getFullYear()} · Built with Vite + React + Lenis</span>
         <a href="#top" onClick={(e) => go(e)} className="hover:text-white">

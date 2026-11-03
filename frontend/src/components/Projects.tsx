@@ -1,7 +1,7 @@
 import {useEffect, useRef, useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
-import {intro, fallbackProjects} from '../content';
-import {getProjects} from '../services/api';
+import {intro} from '../content';
+import {listProjects} from '../services/api';
 import {clamp, pinProgress, range} from '../lib/math';
 import {onFrame} from '../lib/scroll';
 
@@ -15,12 +15,12 @@ export function Projects() {
   const barRef = useRef<HTMLSpanElement>(null);
   const countRef = useRef<HTMLSpanElement>(null);
 
-  const {data: apiProjects, isLoading, error} = useQuery({
+  const {data: apiProjects, isLoading, error, refetch} = useQuery({
     queryKey: ['projects'],
-    queryFn: getProjects,
+    queryFn: listProjects,
   });
 
-  const projects = apiProjects ?? fallbackProjects;
+  const projects = apiProjects?.projects ?? [];
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -69,10 +69,6 @@ export function Projects() {
           <div className="grid md:grid-cols-[minmax(320px,50%)_1fr] md:items-start md:h-screen-s gap-8 md:gap-0 px-4 sm:px-6 md:px-0">
             <div className="relative z-10 min-w-[320px] w-full md:pl-[3vw] md:pr-10 overflow-x-auto" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
               <p className="font-mono text-label text-terminal uppercase">{intro.eyebrow}</p>
-              <h2 id="projects-title" className="mt-4 font-display text-[clamp(1.75rem,3.5vw,3rem)] text-white leading-snug whitespace-nowrap hyphens-none">
-                {intro.heading}
-              </h2>
-              <p className="mt-5 text-body text-regolith/70 max-w-[34rem]">{intro.body}</p>
             </div>
             <ol className="mt-8 flex gap-5 pl-4 sm:pl-6 md:mt-0 md:gap-7 md:pl-0" aria-busy="true">
               {[1, 2, 3].map((i) => (
@@ -96,7 +92,44 @@ export function Projects() {
   }
 
   if (error) {
-    console.error('Failed to load projects:', error);
+    return (
+      <section ref={rootRef} id="projects" aria-labelledby="projects-title" className="relative bg-void" style={{height: `${SECTION_VH}svh`}}>
+        <div className="sticky top-0 h-screen-s pt-16 md:h-screen-s md:pt-0">
+          <div className="grid md:grid-cols-[minmax(320px,50%)_1fr] md:items-start md:h-screen-s gap-8 md:gap-0 px-4 sm:px-6 md:px-0">
+            <div className="relative z-10 min-w-[320px] w-full md:pl-[3vw] md:pr-10 overflow-x-auto" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
+              <p className="font-mono text-label text-terminal uppercase">{intro.eyebrow}</p>
+            </div>
+            <div className="mt-8 flex flex-col items-center justify-center gap-4 text-center" role="alert">
+              <p className="text-regolith/70">Falha ao carregar os projetos.</p>
+              <button
+                type="button"
+                onClick={() => refetch()}
+                className="rounded-[4px] bg-white px-4 py-2.5 font-mono text-label text-void uppercase transition-colors hover:bg-terminal"
+              >
+                Tentar de novo
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (projects.length === 0) {
+    return (
+      <section ref={rootRef} id="projects" aria-labelledby="projects-title" className="relative bg-void" style={{height: `${SECTION_VH}svh`}}>
+        <div className="sticky top-0 h-screen-s pt-16 md:h-screen-s md:pt-0">
+          <div className="grid md:grid-cols-[minmax(320px,50%)_1fr] md:items-start md:h-screen-s gap-8 md:gap-0 px-4 sm:px-6 md:px-0">
+            <div className="relative z-10 min-w-[320px] w-full md:pl-[3vw] md:pr-10 overflow-x-auto" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
+              <p className="font-mono text-label text-terminal uppercase">{intro.eyebrow}</p>
+            </div>
+            <div className="mt-8 flex flex-col items-center justify-center gap-4 text-center">
+              <p className="text-regolith/70">Nenhum projeto publicado ainda.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
   }
 
   return (
@@ -105,10 +138,6 @@ export function Projects() {
         <div className="grid md:grid-cols-[minmax(320px,50%)_1fr] md:items-start md:h-screen-s gap-8 md:gap-0 px-4 sm:px-6 md:px-0">
           <div className="relative z-10 min-w-[320px] w-full md:pl-[3vw] md:pr-10 overflow-x-auto" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
             <p className="font-mono text-label text-terminal uppercase">{intro.eyebrow}</p>
-            <h2 id="projects-title" className="mt-4 font-display text-[clamp(1.75rem,3.5vw,3rem)] text-white leading-snug whitespace-nowrap hyphens-none">
-              {intro.heading}
-            </h2>
-            <p className="mt-5 text-body text-regolith/70 max-w-[34rem]">{intro.body}</p>
             <div className="mt-8 flex items-center gap-4 font-mono text-label text-regolith/60 uppercase hidden md:flex" aria-hidden="true">
               <span>
                 <span ref={countRef} className="text-white">01</span>{' '}
@@ -132,16 +161,18 @@ export function Projects() {
                     <img
                       ref={(el) => { if (el) imgRefs.current[i] = el; }}
                       src={p.image}
-                      alt={`${p.title}: ${p.body}`}
+                      alt=""
                       width={800}
                       height={600}
                       loading="lazy"
                       decoding="async"
                       className="size-full object-cover will-change-transform"
                     />
-                    <span className="absolute top-3 left-3 rounded-[3px] bg-void/70 px-2 py-1 font-mono text-[0.625rem] tracking-[0.14em] text-terminal uppercase backdrop-blur">
-                      {p.tag}
-                    </span>
+                    {p.tag && (
+                      <span className="absolute top-3 left-3 rounded-[3px] bg-void/70 px-2 py-1 font-mono text-[0.625rem] tracking-[0.14em] text-terminal uppercase backdrop-blur">
+                        {p.tag}
+                      </span>
+                    )}
                   </div>
                   <footer className="mt-4 space-y-3">
                     <div className="flex gap-4">
@@ -156,10 +187,12 @@ export function Projects() {
                         <span key={s} className="rounded-[3px] bg-white/5 px-2.5 py-1 font-mono text-[0.625rem] text-regolith/80">{s}</span>
                       ))}
                     </div>
-                    <a href={p.link} className="inline-flex items-center gap-1.5 font-mono text-label text-terminal uppercase hover:text-white transition-colors">
-                      Ver case study
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                    </a>
+                    {p.link && (
+                      <a href={p.link} className="inline-flex items-center gap-1.5 font-mono text-label text-terminal uppercase hover:text-white transition-colors">
+                        Ver projeto
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                      </a>
+                    )}
                   </footer>
                 </article>
               </li>
