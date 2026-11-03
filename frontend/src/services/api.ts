@@ -15,6 +15,8 @@ export const ApiProjectSchema = z.object({
   is_visible: z.boolean(),
   created_at: z.string().datetime(),
   updated_at: z.string().datetime(),
+  // Custom image URL for the project (optional)
+  image_url: z.string().url().nullable().optional(),
 });
 
 export const ProjectsResponseSchema = z.object({
@@ -206,6 +208,10 @@ export function getAdminToken(): string | null {
 // ============================================
 
 function mapApiProjectToUI(api: ApiProject): UIProject {
+  // Use custom image_url if provided, otherwise generate from project ID
+  const customImage = (api as any).image_url;
+  const fallbackImage = `/media/cards/m${((Math.abs(hashCode(api.id)) % 4) + 1)}.webp`;
+
   return {
     id: api.id,
     tag: api.tech_stack[0] ?? '',
@@ -215,7 +221,7 @@ function mapApiProjectToUI(api: ApiProject): UIProject {
     link: api.live_url ?? api.github_url ?? null,
     liveUrl: api.live_url,
     githubUrl: api.github_url,
-    image: `/media/cards/m${((Math.abs(hashCode(api.id)) % 4) + 1)}.webp`,
+    image: customImage && customImage.trim() !== '' ? customImage : fallbackImage,
   };
 }
 

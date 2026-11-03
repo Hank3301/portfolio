@@ -6,7 +6,8 @@ import {clamp, pinProgress, range} from '../lib/math';
 import {onFrame} from '../lib/scroll';
 
 const SECTION_VH = 340;
-const FALLBACK_IMAGE = '/media/cards/m1-launch.webp';
+// Fallback temático de programação (Unsplash - código em IDE escura)
+const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1200&q=80';
 
 export function Projects() {
   const rootRef = useRef<HTMLElement>(null);
