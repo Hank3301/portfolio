@@ -1,6 +1,6 @@
 # Portfólio Full-Stack — Hugo Costa de Souza
 
-Monorepo com backend (FastAPI) e frontend (Next.js 16 + App Router).
+Monorepo com backend (FastAPI) e frontend (Vite + React 19 + Tailwind v4 + Lenis).
 
 ---
 
@@ -20,16 +20,25 @@ Monorepo com backend (FastAPI) e frontend (Next.js 16 + App Router).
 │   └── .env.example
 ├── docs/
 │   └── RELATORIO_ALTERACOES.md
-└── frontend/         # Next.js 16 — pronto para Vercel
+└── frontend/         # Vite + React 19 — pronto para Vercel
     ├── src/
-    │   ├── app/              # App Router (page.tsx, layout.tsx)
-    │   ├── components/       # Hero, Navbar, Skills, AboutContact, ProjectsGrid, ProjectsGridContent, ProjectsGridError, ProjectsGridEmpty, ProjectsGridSkeleton
-    │   ├── lib/              # contact.ts (constantes centralizadas)
-    │   └── services/         # api.ts (tipos + fetchProjects)
+    │   ├── components/   # Hero, Projects, Expertise, Contact, Chrome (Header/Footer), UI
+    │   ├── hooks/        # useFitText, useReducedMotion, useReveals
+    │   ├── lib/          # math, scroll (Lenis), utils, contact.ts
+    │   ├── pages/        # admin/ (AdminLogin, AdminLayout, AdminDashboard)
+    │   ├── services/     # api.ts (tipos + fetch real), queryClient.ts
+    │   ├── App.tsx
+    │   ├── main.tsx
+    │   ├── content.ts    # config estática (brand, nav, hero, intro, expertise, contact)
+    │   └── index.css     # Tailwind v4 + variáveis CSS
     ├── public/
+    │   ├── layers/{d,m}/*.webp    # camadas parallax desktop/mobile
+    │   └── media/cards/m1..m4.webp
+    ├── index.html
     ├── package.json
-    ├── next.config.ts
-    └── tsconfig.json
+    ├── tsconfig.json
+    ├── vite.config.ts
+    └── vercel.json
 ```
 
 ---
@@ -57,9 +66,9 @@ uvicorn main:app --reload
 cd frontend
 npm install
 # Crie .env.local com:
-# NEXT_PUBLIC_API_URL=https://portfolio-api-hank.onrender.com
+# VITE_API_URL=http://127.0.0.1:8000/api
 npm run dev
-# http://localhost:3000
+# http://localhost:3006
 ```
 
 ---
@@ -85,7 +94,9 @@ npm run dev
 ### Frontend (`frontend/.env.local`)
 | Variável | Descrição |
 |----------|-----------|
-| `NEXT_PUBLIC_API_URL` | URL da API (ex: `https://portfolio-api-hank.onrender.com`) |
+| `VITE_API_URL` | URL da API (ex: `https://portfolio-api-hank.onrender.com/api`) |
+
+> **Importante:** A variável do frontend agora é `VITE_API_URL` (não `NEXT_PUBLIC_API_URL`), e deve incluir `/api` no final (ex: `https://portfolio-api-hank.onrender.com/api`).
 
 ---
 
@@ -97,6 +108,7 @@ npm run dev
 | **Vercel** | `frontend/` | `npm run build` | (automático) | `frontend/` |
 
 > O Render está configurado para fazer deploy automático a partir da branch `main` com `Root Directory: backend/`.
+> A Vercel deve ser configurada com **Framework Preset: Vite**, **Root Directory: frontend/**, **Build Command: `npm run build`**, **Output Directory: `dist`**.
 
 ---
 
@@ -105,9 +117,10 @@ npm run dev
 ```bash
 # Frontend
 cd frontend
-npm run dev          # desenvolvimento
-npm run build        # build de produção
-npm run lint         # ESLint
+npm run dev          # desenvolvimento (porta 3006)
+npm run build        # build de produção (gera pasta dist/)
+npm run preview      # preview do build (porta 3006)
+npm run lint         # TypeScript check (tsc --noEmit)
 
 # Backend
 cd backend
@@ -124,13 +137,13 @@ uvicorn main:app --host 0.0.0.0 --port 8000  # produção local
 
 ---
 
-## Próximos Passos (Frontend)
+## Próximos Passos
 
-- [x] Hero Section + Grid de Projetos
-- [x] Seção Skills
-- [x] Seção AboutContact (Sobre Mim + Contato)
-- [ ] Deploy na Vercel
-- [ ] Login Admin + Dashboard (rotas protegidas JWT)
+- [x] Migração Next.js → Vite + React 19 + Tailwind v4 + Lenis
+- [x] Seções públicas usando API real (Hero, Projects, Expertise, Contact)
+- [x] Admin Dashboard com CRUD de projetos (JWT, PUT, UUID)
+- [ ] Deploy na Vercel (configurar framework Vite)
+- [ ] Deploy no Render (configurar CORS para domínio Vercel)
 
 ---
 

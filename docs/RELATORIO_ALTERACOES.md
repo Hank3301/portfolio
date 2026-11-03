@@ -1,244 +1,262 @@
-# Relatório de Alterações — Correções Pós-Revisão + UI Polish + Deploy Fixes
+# Relatório de Alterações — Migração Next.js → Vite + React 19
 
 **Repositório:** Hank3301/portfolio  
-**Branch:** `main`  
-**Data:** 2026-11-01
+**Branch:** `feat/migrar-frontend-vite`  
+**Data:** 2026-11-03
 
 ---
 
 ## Resumo Executivo
 
-Este relatório documenta **todas as correções aplicadas** após revisão externa do repositório + melhorias de UI/UX + fixes de deploy. As correções seguem a ordem de prioridade definida no arquivo `prompt-correcoes-portfolio.md` (Itens 1–5) + issues de produção (CORS, pgbouncer) + UI Polish.
+Este relatório documenta a **migração completa do frontend** de Next.js 16 (App Router) para **Vite + React 19 + Tailwind v4 + Lenis**, mantendo o backend FastAPI inalterado. A migração foi feita em commits atômicos, cada um validado com `npm run lint` e `npm run build`.
 
-**Estado final: Tudo concluído ✅** — Landing Page 100%, CORS configurado, pgbouncer fixado, UI moderna com theme toggle + scroll animations + RGB accents, deploy Vercel + Render funcionando.
-
----
-
-## Item 1 — [CRÍTICO] ProjectsGrid: Arquitetura Server/Client Components Corrigida ✅
-
-**Commits:** `f74faa4` + `80b0ce1` (merge PR #3)
-
-### Problema Original
-- `ProjectsGrid.tsx` tinha `'use client'` e importava `ProjectsGridContent.tsx` (função `async`)
-- Componentes `async` não são suportados no cliente → erro "async Client Component" em produção
-- `ProjectsErrorBoundary` (class component) capturava erro e mostrava sempre aviso amarelo
-- Fetch rodava no navegador → CORS bloqueava (backend só libera `localhost:3000` em `ALLOWED_ORIGINS`)
-- `revalidate` era ignorado no cliente
-- 6 warnings ESLint `react-hooks/error-boundaries` (JSX dentro de try/catch)
-
-### Correção Aplicada
-| Arquivo | Ação | Tipo Final |
-|---------|------|------------|
-| `ProjectsGrid.tsx` | Remove `'use client'`, vira Client apenas para Suspense/ScrollReveal | **Client Component** (`'use client'`) |
-| `ProjectsGridContent.tsx` | Try/catch **apenas no fetch**, JSX fora do try | **Server Component (async)** |
-| `ProjectsErrorBoundary.tsx` | **REMOVIDO** (não necessário) | — |
-| `ProjectsGridError.tsx` | Remove `'use client'` | **Server Component** |
-| `ProjectsGridSkeleton.tsx` | Mantido como fallback do `Suspense` | **Server Component** |
-| `ProjectsGridEmpty.tsx` | Mantido | **Server Component** |
-
-### Padrão Next.js 16 Adotado
-- Server Component faz `fetch` assíncrono e retorna dados ou lança erro
-- Client Component usa `Suspense` + fallback skeleton para loading
-- **Zero JSX dentro de `try/catch`** → ESLint limpo
-
-### Validações
-- **V3 (ESLint):** 0 erros, 0 warnings ✅
-- **V4 (Build):** Compiled successfully, 4 static pages (○ `/`) ✅
-- **V5 (Dev Server):** localhost:3000 renderiza corretamente ✅
+**Estado final:** Frontend Vite funcional contra API real, sem conteúdo inventado, admin panel com CRUD real, build e lint passando.
 
 ---
 
-## Item 2 — [ALTO] Contato Centralizado e Duplicatas Removidas ✅
+## Contexto
 
-**Commit:** `e9b6ed6` — "fix: Item 2 — centraliza contato, remove condicionais TODO e card duplicado"
-
-### Correção Aplicada
-| Arquivo | Ação |
-|---------|------|
-| `frontend/src/lib/contact.ts` | **CRIADO** — Fonte única: `EMAIL`, `LINKEDIN_URL`, `GITHUB_URL` |
-| `page.tsx` | Importa de `@/lib/contact`, remove condicionais `TODO`, mostra todos os 3 links |
-| `AboutContact.tsx` | Importa de `@/lib/contact`, remove card "Vamos conversar?" do `<aside>`, remove comentários obsoletos |
-
-### Validações
-- **V3 (ESLint):** 0 erros, 3 warnings (unused vars em `AboutContact` — importadas mas não usadas após remoção do card) ✅
-- **V4 (Build):** Compiled successfully ✅
-- **V5 (Dev Server):** Uma única ocorrência de "Vamos conversar?" (footer CTA do `page.tsx`) ✅
-- **V7 (grep TODO):** Nenhuma ocorrência de `"TODO"` em constantes de contato ✅
+- **Repositório principal:** https://github.com/Hank3301/portfolio (branch `main`, commit `e46cbc3`)
+- **Repositório de teste (fonte Vite):** https://github.com/Hank3301/portfolio-teste (commit `9317c58`)
+- **Backend:** FastAPI + SQLAlchemy/asyncpg + Supabase PostgreSQL no Render (Root Directory `backend/`)
+- **Frontend publicado:** Vercel (a configurar para Vite)
 
 ---
 
-## Item 3 — [ALTO] Conteúdo Inventado e Inconsistente Removido ✅
+## Commits da Migração
 
-**Commits:** múltiplos (confirmados com usuário)
-
-| Arquivo | Ação |
-|---------|------|
-| `Skills.tsx` | **Removidos 4 cards** de estatística ("Anos 3+", "Projetos 10+", "Techs 15+", "Foco") |
-| `Skills.tsx` / `AboutContact.tsx` | **Removido badge "Docker"** (não há Dockerfile no repo) |
-| `AboutContact.tsx` | **Reescrita bio** só com o que o repo comprova (FastAPI, SQLAlchemy, PostgreSQL/Supabase, Next.js, TypeScript, Tailwind, deploy Render) |
-| `AboutContact.tsx` | **Removido card "Disponibilidade" inteiro** (CLT/PJ, Mentoria, Remote-first/SP) |
-| `Hero.tsx` | **Mantido** selo "Disponível para oportunidades" (confirmado pelo usuário) |
-
----
-
-## Item 4 — [MÉDIO] Skills: Gradientes CSS Corrigidos + Semântica ✅
-
-**Commit:** incluído no PR #3 (`80b0ce1`)
-
-### Correções
-1. **Gradientes inválidos** → Classes Tailwind v4 nativas:
-   - Bolinha: `className={\`h-2 w-2 rounded-full bg-linear-to-r ${skill.color}\`}`
-   - Hover layer: `className={\`absolute inset-0 bg-linear-to-r ${skill.color} opacity-0 group-hover:opacity-100 transition-opacity duration-300\`}`
-2. **Botões sem ação** → `<li>` dentro de `<ul>` (sem `aria-label` redundante)
-3. **Padronização Tailwind v4** — `bg-gradient-to-r` → `bg-linear-to-r`, `bg-gradient-to-br` → `bg-linear-to-br` em:
-   - `Skills.tsx`
-   - `AboutContact.tsx`
-   - `Navbar.tsx`
+| Commit | Hash | Mensagem |
+|--------|------|----------|
+| 1 | `0e8f41c` | `chore(frontend): substitui o app Next.js pelo app Vite do portfolio-teste` |
+| 2 | `5cba681` | `feat(frontend): adiciona cliente do contrato real da API` |
+| 3 | `b76f735` | `fix(frontend): trata erros, preflight e link vazio no cliente da API` |
+| 4 | `16521c5` | `fix(frontend): seções públicas usam a API real e sem conteúdo inventado` |
+| 5 | `6d05ed7` | `feat(frontend): implementa painel administrativo real com CRUD de projetos` |
+| 6 | *(este)* | `docs: atualiza documentação e arquivos de infraestrutura da Vercel para o app Vite` |
 
 ---
 
-## Item 5 — [BAIXO] Limpezas e Documentação ✅
+## Detalhamento por Commit
 
-### Frontend
-| Arquivo | Ação |
-|---------|------|
-| `AboutContact.tsx` | Removidas classes `prose prose-invert prose-zinc` (plugin não instalado) |
-| `AboutContact.tsx` | `next/link` → `<a>` para `mailto:` e links externos |
+### Commit 1 — Base Vite (`0e8f41c`)
+- Substituiu toda a pasta `frontend/` pelo app Vite do `portfolio-teste`
+- Stack: Vite 6, React 19, TypeScript, Tailwind v4, Lenis, react-router-dom v7, @tanstack/react-query v5, zod v4
+- Visual: tema escuro "void" + acento verde "terminal", parallax em camadas (desktop/mobile)
+- Rotas: `/`, `/admin/login`, `/admin` (protegida)
+- Scripts: `dev` (porta 3006), `build`, `preview`, `lint` (tsc --noEmit)
 
-### Documentação
-| Arquivo | Ação |
-|---------|------|
-| `README.md` | Atualizada lista de componentes, "Próximos Passos", variáveis de ambiente |
-| `SUPABASE_URL`/`SUPABASE_KEY` | Marcadas como "não usadas pelo código atual" |
-| Variáveis adicionadas | `ALLOWED_ORIGINS`, `DEBUG`, `GITHUB_TOKEN`, `ACCESS_TOKEN_EXPIRE_MINUTES` |
-| Relatório movido | `docs/RELATORIO_ALTERACOES.md` ✅ |
+### Commit 2 — Cliente API Real (`5cba681`)
+- Adicionado `frontend/src/services/api.ts` com:
+  - `fetchWithTimeout` (60s, AbortController, headers corretos)
+  - `ApiError` com `kind` (network/timeout/format/http) e `fromResponse` (lê `detail` string ou 422 com `loc`)
+  - Novas funções: `listProjects()`, `loginAdmin()`, `getCurrentAdmin()`, `createProjectApi()`, `updateProjectApi()`, `deleteProjectApi()`
+  - `mapApiProjectToUI()` — mapeia `ApiProject` → `UIProject` (imagem decorativa por hash do UUID, link = live_url ?? github_url)
+  - Mantidos (temporariamente) funções e tipos legados para compatibilidade
 
-### Backend / Infraestrutura (sem mexer em regra de negócio)
-| Arquivo | Ação |
-|---------|------|
-| `backend/requirements.txt` | Fixado `bcrypt==4.0.1` junto de `passlib[bcrypt]==1.7.4` |
-| `backend/core/config.py` | `DEBUG` padrão alterado para `False` (produção segura) |
-| `backend/.env.example` | Adicionado exemplo comentado `ALLOWED_ORIGINS` para Vercel |
-| `backend/core/database.py` | **ADICIONADO** `connect_args={"statement_cache_size": 0}` para pgbouncer (Supabase) |
+### Commit 3 — Robustez do Cliente (`b76f735`)
+- Correções no `api.ts`:
+  - Ordem correta de spread: `{...options, headers, signal}`
+  - `Content-Type: application/json` só quando há corpo
+  - Tratamento de preflight e link vazio no mapeamento
+
+### Commit 4 — Seções Públicas Reais (`16521c5`)
+**Objetivo:** Remover **todo conteúdo inventado** e usar apenas API real.
+
+**Alterações em `frontend/src/content.ts`:**
+- `brand`: dados reais (nome, handle `@Hank3301`, email `hcosta547@gmail.com`, GitHub, LinkedIn) — **removido Twitter**
+- `nav`: removido link "Admin" do menu público (rota `/admin` acessível direto pela URL)
+- `hero`: título = `DESENVOLVEDOR BACKEND`; subtitle mantido; **removidos** tagline e location
+- `intro`: **removidos** heading e body com afirmações não comprovadas; eyebrow = `Projetos`
+- `expertise`: **removidos** note ("Anos desde 2023…") e items vazios
+- `contact`: **removidos** heading, body, window, windowLabel, tracks, form inteiro — vira apenas links diretos
+- **Removidos** `fallbackProjects`, `fallbackSkills`, `items: [] as any[]`
+
+**Novos arquivos:**
+- `frontend/src/lib/contact.ts` — constantes `EMAIL`, `LINKEDIN_URL`, `GITHUB_URL`
+
+**Componentes atualizados:**
+- `Hero.tsx` — removido tagline, location; mantido HUD (relógio, status, scroll indicator)
+- `Chrome.tsx` (Header/Footer) — Header sem "Admin" nem botão "Work together"; Footer com handle real
+- `Projects.tsx` — usa `listProjects()`; loading skeleton real; erro com botão "Tentar de novo"; vazio legível; tag = 1ª tech; botão "Ver projeto" (escondido se link null); `alt=""` nas imagens
+- `Expertise.tsx` — **estático**, sem API; 3 grupos: Backend (Python, FastAPI, SQLAlchemy, PostgreSQL/Supabase), Frontend & Tooling (React, TypeScript, Vite, Tailwind, Git), Infra & Deploy (Render, Vercel); **sem anos, sem órbitas**
+- `Contact.tsx` — apenas links diretos (mailto:, LinkedIn, GitHub); **removidos** countdown, tracks, form
+
+**`frontend/index.html`:**
+- `lang="pt-BR"`
+- `<title>Hugo Costa de Souza — Desenvolvedor Backend</title>`
+- description/OG em português neutro, só tecnologias comprovadas
+- **Removido** `og:image` (placeholder 1.3 KB deletado)
+
+**Limpezas:**
+- `grep` por strings proibidas (`hugo@email.com`, `hugocostadesouza`, `fallbackProjects`, `fallbackSkills`, `TODO`, `Lorem`) → **zero ocorrências**
+
+### Commit 5 — Admin Panel Real (`6d05ed7`)
+**Objetivo:** CRUD de projetos usando API real (JWT, PUT, UUID).
+
+**`api.ts` — Limpeza total do código legado:**
+- **Removidos** tipos: `Project`, `Skill`, `ContactForm`, `ContactResponse`, `Health`, `ProjectSchema`, `SkillSchema`, `ContactFormSchema`, `ContactResponseSchema`, `HealthSchema`
+- **Removidas** funções: `getProjects`, `getSkills`, `getHealth`, `submitContact`, `adminLogin`, `adminLogout`, `createProject`, `updateProject`, `deleteProject`, `createSkill`, `updateSkill`, `deleteSkill`, `setAdminToken`, `getAdminToken`
+- **Mantidos/Novos:** `ApiProject`, `ProjectsResponse`, `AdminLoginRequest`, `TokenResponse`, `CurrentAdmin`, `UIProject`, `ApiError`, `fetchWithTimeout`, `listProjects`, `loginAdmin`, `getCurrentAdmin`, `createProjectApi`, `updateProjectApi`, `deleteProjectApi`, `mapApiProjectToUI`, `listAdminProjects` (nova — retorna `ApiProject[]` bruto com todos os campos)
+
+**`AdminLogin.tsx`:**
+- Campos: **usuário + senha** (backend exige `username` e `password` em `application/x-www-form-urlencoded`)
+- Chama `loginAdmin(username, password)` → guarda token via `setAdminToken`
+
+**`AdminLayout.tsx`:**
+- No mount: `getCurrentAdmin()` valida token; **401 limpa token e redireciona para `/admin/login`**
+- Header com botão "Sair" que limpa token e recarrega login
+
+**`AdminDashboard.tsx` — Reescrito:**
+- **Sem aba "Especialidades"** (não existe `/skills` no backend)
+- Query: `listAdminProjects()` → `ApiProject[]` com `description`, `tech_stack`, `github_url`, `live_url`, `is_visible`
+- Mutations: `createProjectApi`, `updateProjectApi` (PUT), `deleteProjectApi` — todas com Bearer token
+- Formulário com campos reais: título, descrição, stack (array), GitHub URL (opcional), Live URL (opcional), checkbox "Visível"
+- **Aviso visível**: "API pública só retorna `is_visible=true`; projetos ocultos não aparecem aqui (limitação do backend)"
+- Tratamento de erros 401/422/rede com mensagens legíveis
+
+### Commit 6 — Documentação e Vercel (`docs: ...`)
+- `frontend/vercel.json` — rewrite SPA (`/*` → `/index.html`), cache estático para `/assets`, `/media`, `/layers`, framework Vite
+- `README.md` — trocado Next.js por Vite, porta 3006, variável `VITE_API_URL`, scripts atualizados, tabela de deploy
+- `docs/RELATORIO_ALTERACOES.md` — este relatório
 
 ---
 
-## 🚀 Fixes de Produção (Pós-Revisão)
+## Arquitetura Final
 
-### CORS — Configurado no Render ✅
-- **Variável:** `ALLOWED_ORIGINS` = `["https://portfolio-los-ovos.vercel.app"]`
-- **Headers confirmados via curl:**
-  ```
-  access-control-allow-origin: https://portfolio-los-ovos.vercel.app
-  access-control-allow-credentials: true
-  ```
-
-### pgbouncer (Supabase) — `statement_cache_size=0` ✅
-- **Arquivo:** `backend/core/database.py` (commit `6e286af`)
-- **Erro resolvido:** `asyncpg.exceptions.InvalidSQLStatementNameError: prepared statement "__asyncpg_stmt_XX__" does not exist`
-- **Deploy Render:** Build successful, aplicação inicia sem erros de DB
-
----
-
-## 🎨 UI Polish — Theme Toggle + Scroll Animations + RGB Accents ✅
-
-**Commits:** PR #3 (`80b0ce1`)
-
-### Novos Componentes
-| Arquivo | Descrição |
-|---------|-----------|
-| `ScrollReveal.tsx` | Framer Motion: `ScrollReveal`, `StaggerContainer`, `StaggerItem` com `whileInView` |
-| `ThemeProvider.tsx` | next-themes wrapper com `suppressHydrationWarning` |
-| `ThemeToggle.tsx` | Botão animado ciclo: light → dark → system, ícones SVG animados |
-
-### Componentes Atualizados
-| Arquivo | Animações/Estilo |
-|---------|------------------|
-| `Hero.tsx` | `StaggerContainer`/`StaggerItem` para badge, título, subtitle, CTAs, scroll indicator |
-| `AboutContact.tsx` | `ScrollReveal` (bio), `StaggerContainer`/`StaggerItem` (tech badges) |
-| `Skills.tsx` | `ScrollReveal` (header), `StaggerContainer`/`StaggerItem` (categorias/badges), gradient borders hover |
-| `ProjectsGrid.tsx` | `ScrollReveal` (header + Suspense content) |
-| `Navbar.tsx` | `ThemeToggle` adicionado, `bg-linear-to-br` gradient |
-| `layout.tsx` | `ThemeProvider` wrapping, `suppressHydrationWarning` no `<html>` |
-
-### Dependências Adicionadas
-```json
-"framer-motion": "^14.9.0",
-"next-themes": "^0.4.6"
+### Frontend (Vite + React 19)
+```
+frontend/
+├── src/
+│   ├── components/
+│   │   ├── Hero.tsx           # Paralax, HUD, canvas particles
+│   │   ├── Projects.tsx       # Carrossel horizontal pin-scroll, API real
+│   │   ├── Expertise.tsx      # 3 cards estáticos (Backend, Frontend, Infra)
+│   │   ├── Contact.tsx        # Links diretos (mailto, LinkedIn, GitHub)
+│   │   ├── Chrome.tsx         # Header (nav) + Footer
+│   │   └── ui/                # Button, Input, Select, Tabs, Textarea
+│   ├── hooks/
+│   │   ├── useFitText.ts
+│   │   ├── useReducedMotion.ts
+│   │   └── useReveals.ts
+│   ├── lib/
+│   │   ├── math.ts            # easeOutCubic, lerp, pinProgress, range, clamp, hashCode
+│   │   ├── scroll.ts          # Lenis wrapper
+│   │   ├── utils.ts
+│   │   └── contact.ts         # EMAIL, LINKEDIN_URL, GITHUB_URL
+│   ├── pages/admin/
+│   │   ├── AdminLogin.tsx     # username + password → loginAdmin()
+│   │   ├── AdminLayout.tsx    # getCurrentAdmin() guard
+│   │   └── AdminDashboard.tsx # CRUD projetos (PUT, UUID, campos reais)
+│   ├── services/
+│   │   ├── api.ts             # Cliente API completo (tipos, erros, fetch, helpers)
+│   │   └── queryClient.ts     # TanStack Query config
+│   ├── App.tsx                # Rotas: /, /admin/login, /admin/*
+│   ├── main.tsx               # Entry point
+│   ├── content.ts             # Config estática (brand, nav, hero, intro, expertise, contact)
+│   └── index.css              # Tailwind v4 + CSS variables (void, terminal, regolith)
+├── public/
+│   ├── layers/d/*.webp        # Parallax desktop
+│   ├── layers/m/*.webp        # Parallax mobile
+│   └── media/cards/m1..m4.webp
+├── index.html
+├── vercel.json
+├── package.json
+├── tsconfig.json
+└── vite.config.ts
 ```
 
----
-
-## Validações Globais (Estado Final)
-
-| Check | Comando | Resultado |
-|-------|---------|-----------|
-| **Build Next.js 16 (Turbopack)** | `cd frontend && npm run build` | ✅ Passou — Static (○) + ISR (ƒ 60s) |
-| **TypeScript** | incluso no build | ✅ Sem erros |
-| **ESLint** | `cd frontend && npm run lint` | ✅ **0 erros, 0 warnings** |
-| **Git status** | `git status --short` | ✅ Clean |
-| **Identidade unificada** | `grep -r "Hugo Costa de Souza" .` | ✅ 10+ ocorrências |
-| **CORS funcionando** | `curl -H "Origin: https://portfolio-los-ovos.vercel.app" https://portfolio-api-hank.onrender.com/api/projects` | ✅ 200 + headers CORS |
-| **Deploy Render** | Dashboard → Events | ✅ Build successful, Deploy live |
-| **Deploy Vercel** | Dashboard → Deployments | ✅ Build successful, Live |
+### Backend (FastAPI) — Inalterado
+- `GET /api/projects?page=1&page_size=100` → lista paginada (só `is_visible=true`)
+- `POST /api/auth/login` → form-urlencoded (username, password) → JWT
+- `GET /api/auth/me` → Bearer token → valida admin
+- `POST /api/projects` → Bearer → cria projeto (title, description, tech_stack, github_url, live_url, is_visible)
+- `PUT /api/projects/{uuid}` → Bearer → atualiza (campos opcionais)
+- `DELETE /api/projects/{uuid}` → Bearer → 204
+- **Limitação conhecida:** admin não vê projetos ocultos (API pública não os retorna)
 
 ---
 
-## Próximos Passos (Backlog Pós-Landing Page)
+## Configurações de Deploy
 
-| Prioridade | Item | Status |
-|------------|------|--------|
-| 1 | **Página `/admin/login`** (JWT → `POST /api/auth/login`) | ⬜ Pendente |
-| 2 | **Dashboard Admin** (CRUD visual Projects + upload) | ⬜ Pendente |
-| 3 | **Seção Skills dinâmica** (opcional: vir da API) | ⬜ Opcional |
-| 4 | **Testes E2E** (Playwright/Cypress) | ⬜ Futuro |
-| 5 | **Avatar photo** (Hero/About) — usar fotos de `C:\Users\hcost\Desktop\teste\fotos` | ⬜ Pendente |
+### Vercel (Frontend)
+| Configuração | Valor |
+|--------------|-------|
+| Framework Preset | **Vite** |
+| Root Directory | `frontend/` |
+| Build Command | `npm run build` |
+| Output Directory | `dist` |
+| Install Command | `npm install` |
+| Dev Command | `npm run dev` |
+| Environment Variables | `VITE_API_URL=https://portfolio-api-hank.onrender.com/api` |
+| Deployment Protection | **Desligado** (site público) |
+
+**`frontend/vercel.json`** garante rewrite SPA e cache de assets estáticos.
+
+### Render (Backend)
+| Configuração | Valor |
+|--------------|-------|
+| Root Directory | `backend/` |
+| Runtime | Python 3.11.9 |
+| Build Command | `pip install -r requirements.txt` |
+| Start Command | `uvicorn main:app --host 0.0.0.0 --port $PORT` |
+| Environment Variables | `ALLOWED_ORIGINS=["https://portfolio-los-ovos.vercel.app"]`, `DEBUG=false`, `bcrypt==4.0.1` |
 
 ---
 
-## Arquivos Alterados (Resumo Completo)
+## Validações (Seção 9 do Prompt)
 
-### Criados
-- `frontend/src/lib/contact.ts`
-- `frontend/src/components/ScrollReveal.tsx`
-- `frontend/src/components/ThemeProvider.tsx`
-- `frontend/src/components/ThemeToggle.tsx`
-- `frontend/src/components/ProjectsGridContent.tsx`
-- `frontend/src/components/ProjectsGridError.tsx`
-- `frontend/src/components/ProjectsGridEmpty.tsx`
-- `frontend/src/components/ProjectsGridSkeleton.tsx`
-- `frontend/src/components/Skills.tsx`
-- `frontend/src/components/AboutContact.tsx`
-- `docs/RELATORIO_ALTERACOES.md`
+| # | Verificação | Comando / Ação | Esperado | Status |
+|---|-------------|----------------|----------|--------|
+| V1 | Lint | `npm run lint` | 0 erros | ✅ |
+| V2 | Build | `npm run build` | Passou; chunks: 1.35 kB HTML, 33.49 kB CSS, 448.37 kB JS | ✅ |
+| V3 | API Health | `curl /api/projects` | JSON paginado | ✅ |
+| V4 | Dev Server + Console | `npm run dev` + navegador | Sem erros, /api/projects 200, sem CORS | ✅ (local) |
+| V5 | Slow 3G | DevTools throttling | Skeleton visível, sem projetos falsos | ⏳ Manual |
+| V6 | API Errada | `VITE_API_URL=http://localhost:9/api` | Estado de erro com botão "Tentar de novo" | ⏳ Manual |
+| V7 | Lista Vazia | Backend sem projetos visíveis | "Nenhum projeto publicado ainda" | ⏳ Manual |
+| V8 | Carrossel 1/2/6 | Testar com dados variados | Sem quebra, pin funciona | ⏳ Manual |
+| V9 | Admin CRUD | Login, criar, editar, excluir | Funciona; token inválido → login | ⏳ Manual |
+| V10 | Preview + /admin/login | `npm run preview` + abrir direto | Sem 404 | ✅ |
+| V11 | Responsivo | 375px, 768px, 1280px | Sem scroll horizontal, menu mobile OK | ⏳ Manual |
+| V12 | Reduced Motion | `prefers-reduced-motion` | Sem Lenis/parallax, conteúdo visível | ✅ Código |
+| V13 | Navegação Teclado | Tab only | Foco visível | ⏳ Manual |
+| V14 | Lighthouse Mobile | `/` | Métricas | ⏳ Manual |
+| V15 | Grep Proibidas | `grep -r ...` | Zero ocorrências | ✅ |
+| V16 | Git Status | `git status --short` antes de commit | Só arquivos esperados | ✅ |
 
-### Modificados
-- `frontend/src/app/page.tsx`
-- `frontend/src/app/layout.tsx`
-- `frontend/src/app/globals.css`
-- `frontend/src/components/Hero.tsx`
-- `frontend/src/components/ProjectsGrid.tsx`
-- `frontend/src/components/Navbar.tsx`
-- `frontend/src/services/api.ts`
-- `frontend/package.json`
-- `backend/core/config.py`
-- `backend/core/database.py`
-- `backend/requirements.txt`
-- `backend/.env.example`
-- `README.md`
+---
 
-### Removidos
-- `frontend/src/components/ProjectsErrorBoundary.tsx`
+## Próximos Passos (Responsabilidade do Usuário)
+
+1. **Vercel:** Alterar Framework Preset para **Vite**, Root Directory `frontend/`, Build `npm run build`, Output `dist`; trocar `NEXT_PUBLIC_API_URL` por `VITE_API_URL=https://portfolio-api-hank.onrender.com/api`; desligar Deployment Protection.
+2. **Render:** Adicionar domínio Vercel em `ALLOWED_ORIGINS` (`["https://portfolio-los-ovos.vercel.app"]`); confirmar `DEBUG=false`; `bcrypt==4.0.1` fixo no `requirements.txt`.
+3. **Backend:** Apagar um dos 2 projetos duplicados "Sistema de Gestão Tecnotextil" no banco.
+4. **Conteúdo (opcional):** Fornecer bio/tagline, imagem OG (1200x630), currículo se desejar.
 
 ---
 
 ## Links de Referência
 
-- **GitHub:** https://github.com/Hank3301/portfolio
+- **GitHub (principal):** https://github.com/Hank3301/portfolio
+- **GitHub (teste):** https://github.com/Hank3301/portfolio-teste
 - **API (Render):** https://portfolio-api-hank.onrender.com
-- **Swagger:** https://portfolio-api-hank.onrender.com/docs (apenas se DEBUG=true)
-- **Frontend (Vercel):** https://portfolio-los-ovos.vercel.app/
-- **Frontend (alt):** https://portfolio-fawn-iota-45.vercel.app/
+- **Swagger:** https://portfolio-api-hank.onrender.com/docs
+- **Frontend (Vercel - a configurar):** https://portfolio-los-ovos.vercel.app/
 
 ---
 
-*Relatório atualizado em 2026-11-01 — Reflete commits até `6e286af` na branch `main`*
+## Commits da Branch `feat/migrar-frontend-vite`
+
+```
+6d05ed7 feat(frontend): implementa painel administrativo real com CRUD de projetos
+16521c5 fix(frontend): seções públicas usam a API real e sem conteúdo inventado
+b76f735 fix(frontend): trata erros, preflight e link vazio no cliente da API
+5cba681 feat(frontend): adiciona cliente do contrato real da API
+0e8f41c chore(frontend): substitui o app Next.js pelo app Vite do portfolio-teste
+e46cbc3 Merge pull request #5 from Hank3301/fix/projects-grid-server-components
+...
+```
+
+---
+
+*Relatório gerado em 2026-11-03 — Reflete commits até `6d05ed7` na branch `feat/migrar-frontend-vite`*
