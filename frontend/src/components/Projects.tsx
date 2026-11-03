@@ -7,8 +7,21 @@ import {onFrame} from '../lib/scroll';
 
 const SECTION_VH = 340;
 const MOBILE_SECTION_VH = 180; // Reduced height for mobile
-// Fallback temático de programação (Unsplash - código em IDE escura)
-const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1200&q=80';
+// Local fallback images (m1-m4.webp in public/media/cards/)
+const LOCAL_FALLBACKS = [
+  '/media/cards/m1-launch.webp',
+  '/media/cards/m2-orbit.webp',
+  '/media/cards/m3-base.webp',
+  '/media/cards/m4-walk.webp',
+] as const;
+
+function hashCode(str: string): number {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) {
+    h = ((h << 5) - h + str.charCodeAt(i)) | 0;
+  }
+  return h;
+}
 
 export function Projects() {
   const rootRef = useRef<HTMLElement>(null);
@@ -205,8 +218,11 @@ export function Projects() {
                       decoding="async"
                       onError={(e) => {
                         const target = e.currentTarget;
-                        if (target.src !== FALLBACK_IMAGE) {
-                          target.src = FALLBACK_IMAGE;
+                        const currentSrc = target.src;
+                        const fallbackIndex = Math.abs(hashCode(p.id)) % LOCAL_FALLBACKS.length;
+                        const localFallback = LOCAL_FALLBACKS[fallbackIndex];
+                        if (!currentSrc.endsWith(localFallback)) {
+                          target.src = localFallback;
                         }
                       }}
                       className="size-full object-cover will-change-transform"
