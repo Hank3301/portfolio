@@ -6,6 +6,7 @@ import {clamp, pinProgress, range} from '../lib/math';
 import {onFrame} from '../lib/scroll';
 
 const SECTION_VH = 340;
+const FALLBACK_IMAGE = '/media/cards/m1-launch.webp';
 
 export function Projects() {
   const rootRef = useRef<HTMLElement>(null);
@@ -20,7 +21,15 @@ export function Projects() {
     queryFn: listProjects,
   });
 
-  const projects = apiProjects?.projects ?? [];
+  // Deduplicate projects by ID
+  const rawProjects = apiProjects?.projects ?? [];
+  const seenIds = new Set<string>();
+  const projects = rawProjects.filter((p) => {
+    if (seenIds.has(p.id)) return false;
+    seenIds.add(p.id);
+    return true;
+  });
+
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -65,8 +74,8 @@ export function Projects() {
   if (isLoading && !mounted) {
     return (
       <section ref={rootRef} id="projects" aria-labelledby="projects-title" className="relative bg-void" style={{height: `${SECTION_VH}svh`}}>
-        <div className="sticky top-0 h-screen-s pt-16 md:h-screen-s md:pt-0">
-          <div className="grid md:grid-cols-[minmax(320px,50%)_1fr] md:items-start md:h-screen-s gap-8 md:gap-0 px-4 sm:px-6 md:px-0">
+        <div className="sticky top-0 h-screen-s flex items-center justify-center pt-16 md:h-screen-s md:pt-0">
+          <div className="grid md:grid-cols-[minmax(320px,50%)_1fr] md:items-start md:h-screen-s gap-8 md:gap-0 px-4 sm:px-6 md:px-0 w-full">
             <div className="relative z-10 min-w-[320px] w-full md:pl-[3vw] md:pr-10 overflow-x-auto" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
               <p className="font-mono text-label text-terminal uppercase">{intro.eyebrow}</p>
             </div>
@@ -94,8 +103,8 @@ export function Projects() {
   if (error) {
     return (
       <section ref={rootRef} id="projects" aria-labelledby="projects-title" className="relative bg-void" style={{height: `${SECTION_VH}svh`}}>
-        <div className="sticky top-0 h-screen-s pt-16 md:h-screen-s md:pt-0">
-          <div className="grid md:grid-cols-[minmax(320px,50%)_1fr] md:items-start md:h-screen-s gap-8 md:gap-0 px-4 sm:px-6 md:px-0">
+        <div className="sticky top-0 h-screen-s flex items-center justify-center pt-16 md:h-screen-s md:pt-0">
+          <div className="grid md:grid-cols-[minmax(320px,50%)_1fr] md:items-start md:h-screen-s gap-8 md:gap-0 px-4 sm:px-6 md:px-0 w-full">
             <div className="relative z-10 min-w-[320px] w-full md:pl-[3vw] md:pr-10 overflow-x-auto" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
               <p className="font-mono text-label text-terminal uppercase">{intro.eyebrow}</p>
             </div>
@@ -118,8 +127,8 @@ export function Projects() {
   if (projects.length === 0) {
     return (
       <section ref={rootRef} id="projects" aria-labelledby="projects-title" className="relative bg-void" style={{height: `${SECTION_VH}svh`}}>
-        <div className="sticky top-0 h-screen-s pt-16 md:h-screen-s md:pt-0">
-          <div className="grid md:grid-cols-[minmax(320px,50%)_1fr] md:items-start md:h-screen-s gap-8 md:gap-0 px-4 sm:px-6 md:px-0">
+        <div className="sticky top-0 h-screen-s flex items-center justify-center pt-16 md:h-screen-s md:pt-0">
+          <div className="grid md:grid-cols-[minmax(320px,50%)_1fr] md:items-start md:h-screen-s gap-8 md:gap-0 px-4 sm:px-6 md:px-0 w-full">
             <div className="relative z-10 min-w-[320px] w-full md:pl-[3vw] md:pr-10 overflow-x-auto" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
               <p className="font-mono text-label text-terminal uppercase">{intro.eyebrow}</p>
             </div>
@@ -134,8 +143,8 @@ export function Projects() {
 
   return (
     <section ref={rootRef} id="projects" aria-labelledby="projects-title" className="relative bg-void" style={{height: `${SECTION_VH}svh`}}>
-      <div className="sticky top-0 h-screen-s pt-16 md:h-screen-s md:pt-0">
-        <div className="grid md:grid-cols-[minmax(320px,50%)_1fr] md:items-start md:h-screen-s gap-8 md:gap-0 px-4 sm:px-6 md:px-0">
+      <div className="sticky top-0 h-screen-s flex items-center justify-center pt-16 md:h-screen-s md:pt-0">
+        <div className="grid md:grid-cols-[minmax(320px,50%)_1fr] md:items-start md:h-screen-s gap-8 md:gap-0 px-4 sm:px-6 md:px-0 w-full">
           <div className="relative z-10 min-w-[320px] w-full md:pl-[3vw] md:pr-10 overflow-x-auto" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
             <p className="font-mono text-label text-terminal uppercase">{intro.eyebrow}</p>
             <div className="mt-8 flex items-center gap-4 font-mono text-label text-regolith/60 uppercase hidden md:flex" aria-hidden="true">
@@ -166,6 +175,12 @@ export function Projects() {
                       height={600}
                       loading="lazy"
                       decoding="async"
+                      onError={(e) => {
+                        const target = e.currentTarget;
+                        if (target.src !== FALLBACK_IMAGE) {
+                          target.src = FALLBACK_IMAGE;
+                        }
+                      }}
                       className="size-full object-cover will-change-transform"
                     />
                     {p.tag && (
