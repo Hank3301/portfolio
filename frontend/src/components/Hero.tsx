@@ -1,4 +1,4 @@
-import {useEffect, useRef} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {hero} from '../content';
 import {useReducedMotion} from '../hooks/useReducedMotion';
 import {useFitText} from '../hooks/useFitText';
@@ -6,6 +6,7 @@ import {easeOutCubic, lerp, pinProgress, range} from '../lib/math';
 import {onFrame} from '../lib/scroll';
 
 const STAGE_VH = 380;
+const MOBILE_STAGE_VH = 120; // Reduced height for mobile
 
 export function Hero() {
   const rootRef = useRef<HTMLElement>(null);
@@ -17,6 +18,14 @@ export function Hero() {
   const reducedRef = useRef(reduced);
   reducedRef.current = reduced;
   const titleFit = useFitText<HTMLDivElement>();
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
@@ -89,17 +98,23 @@ export function Hero() {
       if (Math.abs(p - lastP) < 0.00005) return;
       lastP = p;
 
-      const tIn = easeOutCubic(range(p, 0.05, 0.25));
-      const tOut = range(p, 0.45, 0.55);
+      // Mobile: titles visible immediately, faster animation
+      const tInStart = isMobile ? 0 : 0.05;
+      const tInEnd = isMobile ? 0.1 : 0.25;
+      const tOutStart = isMobile ? 0.8 : 0.45;
+      const tOutEnd = isMobile ? 0.9 : 0.55;
+
+      const tIn = easeOutCubic(range(p, tInStart, tInEnd));
+      const tOut = range(p, tOutStart, tOutEnd);
       const title = titleFit.current!;
       title.style.opacity = String(tIn * (1 - tOut));
-      title.style.transform = `translate3d(0, ${-p * 8}vh, 0)`;
+      title.style.transform = `translate3d(0, ${-p * (isMobile ? 4 : 8)}vh, 0)`;
       title.style.letterSpacing = `${lerp(0.5, 0.16, tIn)}em`;
 
       // Subtitle animation
-      const subIn = easeOutCubic(range(p, 0.12, 0.35));
+      const subIn = easeOutCubic(range(p, isMobile ? 0.05 : 0.12, isMobile ? 0.15 : 0.35));
       subtitleRef.current!.style.opacity = String(subIn * (1 - tOut));
-      subtitleRef.current!.style.transform = `translate3d(0, ${-p * 6}vh, 0)`;
+      subtitleRef.current!.style.transform = `translate3d(0, ${-p * (isMobile ? 3 : 6)}vh, 0)`;
 
       canvasRef.current!.style.opacity = String(1 - range(p, 0, 0.5));
 
@@ -108,10 +123,10 @@ export function Hero() {
       clockRef.current!.textContent = `UPTIME ${String(Math.floor(secs / 3600)).padStart(2, '0')}:${String(Math.floor((secs % 3600) / 60)).padStart(2, '0')}:${String(Math.floor(secs % 60)).padStart(2, '0')}`;
       statusRef.current!.textContent = range(p, 0.3, 0.6) > 0.5 ? 'PROCESSING' : 'IDLE';
     });
-  }, []);
+  }, [isMobile]);
 
   return (
-    <section id="top" ref={rootRef} aria-label="Hero" className="relative" style={{height: `${STAGE_VH}svh`}}>
+    <section id="top" ref={rootRef} aria-label="Hero" className="relative" style={{height: `${isMobile ? MOBILE_STAGE_VH : STAGE_VH}svh`}}>
       <div className="sticky top-0 h-screen-s overflow-hidden bg-void">
         <div className="absolute inset-0" aria-hidden="true" style={{
           backgroundImage: `
@@ -122,12 +137,12 @@ export function Hero() {
         }} />
         <canvas ref={canvasRef} aria-hidden="true" className="pointer-events-none absolute inset-0 size-full" />
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
-          <div ref={titleFit} className="font-display text-hero text-white [text-shadow:0_4px_40px_rgba(0,255,136,0.3)] whitespace-nowrap" style={{marginRight: '-0.16em', opacity: 0}}>
+          <div ref={titleFit} className="font-display text-hero text-white [text-shadow:0_4px_40px_rgba(0,255,136,0.3)] whitespace-nowrap" style={{marginRight: '-0.16em', opacity: isMobile ? 1 : 0}}>
             {hero.title}
           </div>
-          <p ref={subtitleRef} className="mt-4 font-mono text-display text-terminal/90 uppercase tracking-[0.12em]" style={{opacity: 0}}>{hero.subtitle}</p>
+          <p ref={subtitleRef} className="mt-4 font-mono text-display text-terminal/90 uppercase tracking-[0.12em]" style={{opacity: isMobile ? 1 : 0}}>{hero.subtitle}</p>
         </div>
-        <div ref={hudRef} aria-hidden="true" className="pointer-events-none absolute inset-4 font-mono text-[0.625rem] tracking-[0.14em] text-regolith/75 uppercase sm:inset-6 md:text-label" style={{opacity: 0}}>
+        <div ref={hudRef} aria-hidden="true" className="pointer-events-none absolute inset-4 font-mono text-[0.625rem] tracking-[0.14em] text-regolith/75 uppercase sm:inset-6 md:text-label" style={{opacity: isMobile ? 1 : 0}}>
           <div className="brackets absolute inset-0 text-regolith/40" />
           <div className="absolute top-16 left-3 space-y-1 md:top-20 md:left-4">
             <p ref={clockRef}>UPTIME 00:00:00</p>

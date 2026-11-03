@@ -6,6 +6,7 @@ import {clamp, pinProgress, range} from '../lib/math';
 import {onFrame} from '../lib/scroll';
 
 const SECTION_VH = 340;
+const MOBILE_SECTION_VH = 180; // Reduced height for mobile
 // Fallback temático de programação (Unsplash - código em IDE escura)
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1200&q=80';
 
@@ -16,6 +17,14 @@ export function Projects() {
   const imgRefs = useRef<HTMLImageElement[]>([]);
   const barRef = useRef<HTMLSpanElement>(null);
   const countRef = useRef<HTMLSpanElement>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const {data: apiProjects, isLoading, error, refetch} = useQuery({
     queryKey: ['projects'],
@@ -44,12 +53,13 @@ export function Projects() {
       const track = trackRef.current;
       if (!root || !track) return;
       const {p, rect, vh} = pinProgress(root);
-      if (rect.bottom < 0 || rect.top > vh) return;
+      // Mobile: don't restrict to viewport bounds as strictly
+      if (!isMobile && (rect.bottom < 0 || rect.top > vh)) return;
       if (Math.abs(p - lastP) < 0.00005) return;
       lastP = p;
 
       const vw = window.innerWidth;
-      const k = range(p, 0.04, 0.96);
+      const k = range(p, isMobile ? 0.02 : 0.04, isMobile ? 0.98 : 0.96);
       const travel = Math.max(0, track.offsetLeft + track.scrollWidth - vw * 0.94);
       track.style.transform = `translate3d(${-k * travel}px, 0, 0)`;
 
@@ -70,11 +80,13 @@ export function Projects() {
       barRef.current!.style.transform = `scaleX(${k})`;
       countRef.current!.textContent = `0${nearest + 1}`;
     });
-  }, []);
+  }, [isMobile]);
+
+  const sectionHeight = isMobile ? MOBILE_SECTION_VH : SECTION_VH;
 
   if (isLoading && !mounted) {
     return (
-      <section ref={rootRef} id="projects" aria-labelledby="projects-title" className="relative bg-void" style={{height: `${SECTION_VH}svh`}}>
+      <section ref={rootRef} id="projects" aria-labelledby="projects-title" className="relative bg-void" style={{height: `${sectionHeight}svh`}}>
         <div className="sticky top-0 h-screen-s flex items-center justify-center pt-16 md:h-screen-s md:pt-0">
           <div className="grid md:grid-cols-[minmax(320px,50%)_1fr] md:items-start md:h-screen-s gap-8 md:gap-0 px-4 sm:px-6 md:px-0 w-full">
             <div className="relative z-10 min-w-[320px] w-full md:pl-[3vw] md:pr-10 overflow-x-auto" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
@@ -103,7 +115,7 @@ export function Projects() {
 
   if (error) {
     return (
-      <section ref={rootRef} id="projects" aria-labelledby="projects-title" className="relative bg-void" style={{height: `${SECTION_VH}svh`}}>
+      <section ref={rootRef} id="projects" aria-labelledby="projects-title" className="relative bg-void" style={{height: `${sectionHeight}svh`}}>
         <div className="sticky top-0 h-screen-s flex items-center justify-center pt-16 md:h-screen-s md:pt-0">
           <div className="grid md:grid-cols-[minmax(320px,50%)_1fr] md:items-start md:h-screen-s gap-8 md:gap-0 px-4 sm:px-6 md:px-0 w-full">
             <div className="relative z-10 min-w-[320px] w-full md:pl-[3vw] md:pr-10 overflow-x-auto" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
@@ -127,7 +139,7 @@ export function Projects() {
 
   if (projects.length === 0) {
     return (
-      <section ref={rootRef} id="projects" aria-labelledby="projects-title" className="relative bg-void" style={{height: `${SECTION_VH}svh`}}>
+      <section ref={rootRef} id="projects" aria-labelledby="projects-title" className="relative bg-void" style={{height: `${sectionHeight}svh`}}>
         <div className="sticky top-0 h-screen-s flex items-center justify-center pt-16 md:h-screen-s md:pt-0">
           <div className="grid md:grid-cols-[minmax(320px,50%)_1fr] md:items-start md:h-screen-s gap-8 md:gap-0 px-4 sm:px-6 md:px-0 w-full">
             <div className="relative z-10 min-w-[320px] w-full md:pl-[3vw] md:pr-10 overflow-x-auto" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
@@ -143,7 +155,7 @@ export function Projects() {
   }
 
   return (
-    <section ref={rootRef} id="projects" aria-labelledby="projects-title" className="relative bg-void" style={{height: `${SECTION_VH}svh`}}>
+    <section ref={rootRef} id="projects" aria-labelledby="projects-title" className="relative bg-void" style={{height: `${sectionHeight}svh`}}>
       <div className="sticky top-0 h-screen-s flex items-center justify-center pt-16 md:h-screen-s md:pt-0">
         <div className="grid md:grid-cols-[minmax(320px,50%)_1fr] md:items-start md:h-screen-s gap-8 md:gap-0 px-4 sm:px-6 md:px-0 w-full">
           <div className="relative z-10 min-w-[320px] w-full md:pl-[3vw] md:pr-10 overflow-x-auto" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>

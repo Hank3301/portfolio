@@ -7,6 +7,10 @@ export function useReveals<T extends HTMLElement>() {
     const root = ref.current;
     if (!root) return;
 
+    // Mobile: less aggressive rootMargin so elements reveal sooner
+    const isMobile = window.innerWidth < 768;
+    const rootMargin = isMobile ? '0px 0px -5% 0px' : '0px 0px -10% 0px';
+
     const io = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -15,7 +19,7 @@ export function useReveals<T extends HTMLElement>() {
           io.unobserve(entry.target);
         });
       },
-      {rootMargin: '0px 0px -10% 0px'},
+      {rootMargin},
     );
 
     const watch = () =>
