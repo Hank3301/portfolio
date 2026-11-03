@@ -1,10 +1,6 @@
-import type {Project, Skill} from './services/api';
-
 // ============================================
-// Types (re-export from API)
+// Types (re-export from API) - removed old types
 // ============================================
-
-export type {Project, Skill};
 
 export const expertise = {
   eyebrow: 'Especialidades',

@@ -1,11 +1,12 @@
 import {useState, FormEvent} from 'react';
 import {useNavigate, useLocation} from 'react-router-dom';
-import {adminLogin} from '../../services/api';
+import {loginAdmin} from '../../services/api';
 import {brand} from '../../content';
 
 export function AdminLogin() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -17,10 +18,14 @@ export function AdminLogin() {
     setError('');
     setLoading(true);
     try {
-      await adminLogin(password);
+      await loginAdmin(username, password);
       navigate(from, {replace: true});
     } catch (err) {
-      setError('Senha incorreta');
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Erro ao fazer login');
+      }
     } finally {
       setLoading(false);
     }
@@ -36,8 +41,25 @@ export function AdminLogin() {
 
         <form onSubmit={onSubmit} className="space-y-6 bg-void-2/60 ring-1 ring-white/10 rounded-[8px] p-8">
           <div>
+            <label htmlFor="username" className="block font-mono text-label text-regolith/60 uppercase mb-2">
+              Usuário
+            </label>
+            <input
+              id="username"
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              autoComplete="username"
+              disabled={loading}
+              className="w-full rounded-[4px] bg-white/[0.04] px-4 py-3.5 text-body text-white ring-1 ring-white/15 outline-none placeholder:text-regolith/40 focus:ring-terminal"
+              placeholder="admin"
+            />
+          </div>
+
+          <div>
             <label htmlFor="password" className="block font-mono text-label text-regolith/60 uppercase mb-2">
-              Senha de admin
+              Senha
             </label>
             <input
               id="password"

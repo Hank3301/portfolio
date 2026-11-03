@@ -4,51 +4,6 @@ import {z} from 'zod';
 // Types (match FastAPI backend schemas)
 // ============================================
 
-// --- Legacy types (kept for existing components) ---
-export const ProjectSchema = z.object({
-  id: z.number().optional(),
-  tag: z.string(),
-  title: z.string(),
-  body: z.string(),
-  stack: z.array(z.string()),
-  link: z.string(),
-  image: z.string(),
-  createdAt: z.string().optional(),
-  updatedAt: z.string().optional(),
-});
-
-export const SkillSchema = z.object({
-  id: z.number().optional(),
-  name: z.string(),
-  years: z.number(),
-  lines: z.array(z.string()),
-  featured: z.boolean().optional(),
-  cta: z.string().optional(),
-});
-
-export const ContactFormSchema = z.object({
-  name: z.string().min(1),
-  email: z.string().email(),
-  track: z.string().min(1),
-  context: z.string().min(1),
-});
-
-export const ContactResponseSchema = z.object({
-  success: z.boolean(),
-  message: z.string().optional(),
-});
-
-export const HealthSchema = z.object({
-  status: z.string(),
-  version: z.string().optional(),
-});
-
-export type Project = z.infer<typeof ProjectSchema>;
-export type Skill = z.infer<typeof SkillSchema>;
-export type ContactForm = z.infer<typeof ContactFormSchema>;
-export type ContactResponse = z.infer<typeof ContactResponseSchema>;
-export type Health = z.infer<typeof HealthSchema>;
-
 // --- New types matching real backend contract ---
 export const ApiProjectSchema = z.object({
   id: z.string().uuid(),
@@ -227,30 +182,7 @@ async function fetchWithTimeout<T>(
 }
 
 // ============================================
-// Legacy Public API (kept for existing components)
-// ============================================
-
-export async function getProjects(): Promise<Project[]> {
-  return fetchWithTimeout<Project[]>('/projects');
-}
-
-export async function getSkills(): Promise<Skill[]> {
-  return fetchWithTimeout<Skill[]>('/skills');
-}
-
-export async function getHealth(): Promise<Health> {
-  return fetchWithTimeout<Health>('/health');
-}
-
-export async function submitContact(data: ContactForm): Promise<ContactResponse> {
-  return fetchWithTimeout<ContactResponse>('/contact', {
-    method: 'POST',
-    body: JSON.stringify(data),
-  });
-}
-
-// ============================================
-// Legacy Admin API (kept for existing components)
+// Admin Token Helpers
 // ============================================
 
 let adminToken: string | null = null;
@@ -267,68 +199,6 @@ export function setAdminToken(token: string | null) {
 export function getAdminToken(): string | null {
   if (adminToken) return adminToken;
   return localStorage.getItem('admin_token');
-}
-
-function authHeaders(): Record<string, string> {
-  const token = getAdminToken();
-  return token ? {Authorization: `Bearer ${token}`} : {};
-}
-
-export async function adminLogin(password: string): Promise<{token: string}> {
-  return fetchWithTimeout<{token: string}>('/admin/login', {
-    method: 'POST',
-    body: JSON.stringify({password}),
-  });
-}
-
-export async function adminLogout(): Promise<void> {
-  setAdminToken(null);
-}
-
-export async function createProject(data: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>): Promise<Project> {
-  return fetchWithTimeout<Project>('/admin/projects', {
-    method: 'POST',
-    headers: authHeaders(),
-    body: JSON.stringify(data),
-  });
-}
-
-export async function updateProject(id: number, data: Partial<Project>): Promise<Project> {
-  return fetchWithTimeout<Project>(`/admin/projects/${id}`, {
-    method: 'PATCH',
-    headers: authHeaders(),
-    body: JSON.stringify(data),
-  });
-}
-
-export async function deleteProject(id: number): Promise<void> {
-  await fetchWithTimeout<void>(`/admin/projects/${id}`, {
-    method: 'DELETE',
-    headers: authHeaders(),
-  });
-}
-
-export async function createSkill(data: Omit<Skill, 'id'>): Promise<Skill> {
-  return fetchWithTimeout<Skill>('/admin/skills', {
-    method: 'POST',
-    headers: authHeaders(),
-    body: JSON.stringify(data),
-  });
-}
-
-export async function updateSkill(id: number, data: Partial<Skill>): Promise<Skill> {
-  return fetchWithTimeout<Skill>(`/admin/skills/${id}`, {
-    method: 'PATCH',
-    headers: authHeaders(),
-    body: JSON.stringify(data),
-  });
-}
-
-export async function deleteSkill(id: number): Promise<void> {
-  await fetchWithTimeout<void>(`/admin/skills/${id}`, {
-    method: 'DELETE',
-    headers: authHeaders(),
-  });
 }
 
 // ============================================
@@ -368,6 +238,21 @@ export async function listProjects(): Promise<{projects: UIProject[]; total: num
   // total pode ser > 100; listProjects devolve a primeira página e o total real
   return {
     projects: parsed.data.items.map(mapApiProjectToUI),
+    total: parsed.data.total,
+  };
+}
+
+// Admin: fetch raw ApiProject data (with all fields including is_visible, description, etc.)
+export async function listAdminProjects(): Promise<{projects: ApiProject[]; total: number}> {
+  const response = await fetchWithTimeout<ProjectsResponse>(
+    '/projects?page=1&page_size=100',
+  );
+  const parsed = ProjectsResponseSchema.safeParse(response);
+  if (!parsed.success) {
+    throw new ApiError('format', null, 'Formato de resposta inválido da API');
+  }
+  return {
+    projects: parsed.data.items,
     total: parsed.data.total,
   };
 }

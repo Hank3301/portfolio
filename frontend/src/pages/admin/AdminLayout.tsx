@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'react';
 import {Outlet, Navigate, useLocation} from 'react-router-dom';
-import {getAdminToken, adminLogout} from '../../services/api';
+import {getCurrentAdmin, getAdminToken, setAdminToken} from '../../services/api';
 
 export function AdminLayout() {
   const [authed, setAuthed] = useState(false);
@@ -9,8 +9,23 @@ export function AdminLayout() {
 
   useEffect(() => {
     const token = getAdminToken();
-    setAuthed(!!token);
-    setChecking(false);
+    if (!token) {
+      setAuthed(false);
+      setChecking(false);
+      return;
+    }
+
+    getCurrentAdmin()
+      .then(() => {
+        setAuthed(true);
+        setChecking(false);
+      })
+      .catch((_err) => {
+        // 401 or any error: clear token and redirect to login
+        setAdminToken(null);
+        setAuthed(false);
+        setChecking(false);
+      });
   }, []);
 
   if (checking) {
@@ -30,7 +45,7 @@ export function AdminLayout() {
       <header className="border-b border-white/10 px-6 py-4 flex items-center justify-between">
         <h1 className="font-display text-xl text-white">Admin Dashboard</h1>
         <button
-          onClick={() => { adminLogout(); window.location.href = '/admin/login'; }}
+          onClick={() => { setAdminToken(null); window.location.href = '/admin/login'; }}
           className="px-4 py-2 rounded-[4px] bg-white/5 text-white/75 hover:bg-white/10 font-mono text-label transition-colors"
         >
           Sair
