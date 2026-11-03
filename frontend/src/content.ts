@@ -5,8 +5,6 @@
 export const expertise = {
   eyebrow: 'Especialidades',
   heading: 'Três camadas da stack.',
-  note: '',
-  items: [] as any[],
 };
 
 // ============================================
@@ -16,9 +14,6 @@ export const expertise = {
 export const brand = {
   name: 'Hugo Costa de Souza',
   handle: '@Hank3301',
-  email: 'hcosta547@gmail.com',
-  github: 'https://github.com/Hank3301',
-  linkedin: 'https://www.linkedin.com/in/hugo-costa-de-souza-4a7291292/',
 };
 
 export const nav = [
@@ -30,14 +25,10 @@ export const nav = [
 export const hero = {
   title: 'DESENVOLVEDOR BACKEND',
   subtitle: 'Automação • Bots • Agentes de IA',
-  tagline: '',
-  location: '',
 };
 
 export const intro = {
   eyebrow: 'Projetos',
-  heading: '',
-  body: '',
 };
 
 // ============================================
@@ -46,10 +37,4 @@ export const intro = {
 
 export const contact = {
   eyebrow: 'Contato',
-  heading: '',
-  body: '',
-  window: '',
-  windowLabel: '',
-  tracks: [] as any[],
-  form: {} as any,
 };
