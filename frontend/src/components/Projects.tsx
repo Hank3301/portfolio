@@ -89,7 +89,7 @@ export function Projects() {
       <section ref={rootRef} id="projects" aria-labelledby="projects-title" className="relative bg-void" style={{height: `${sectionHeight}svh`}}>
         <div className="sticky top-0 h-screen-s flex items-center justify-center pt-16 md:h-screen-s md:pt-0">
           <div className="grid md:grid-cols-[minmax(320px,50%)_1fr] md:items-start md:h-screen-s gap-8 md:gap-0 px-4 sm:px-6 md:px-0 w-full">
-            <div className="relative z-10 min-w-[320px] w-full md:pl-[3vw] md:pr-10 overflow-x-auto" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
+            <div className="relative z-10 min-w-0 w-full md:min-w-[320px] md:pl-[3vw] md:pr-10 overflow-x-visible md:overflow-x-auto" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
               <p className="font-mono text-label text-terminal uppercase">{intro.eyebrow}</p>
             </div>
             <ol className="mt-8 flex gap-5 pl-4 sm:pl-6 md:mt-0 md:gap-7 md:pl-0" aria-busy="true">
@@ -118,7 +118,7 @@ export function Projects() {
       <section ref={rootRef} id="projects" aria-labelledby="projects-title" className="relative bg-void" style={{height: `${sectionHeight}svh`}}>
         <div className="sticky top-0 h-screen-s flex items-center justify-center pt-16 md:h-screen-s md:pt-0">
           <div className="grid md:grid-cols-[minmax(320px,50%)_1fr] md:items-start md:h-screen-s gap-8 md:gap-0 px-4 sm:px-6 md:px-0 w-full">
-            <div className="relative z-10 min-w-[320px] w-full md:pl-[3vw] md:pr-10 overflow-x-auto" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
+            <div className="relative z-10 min-w-0 w-full md:min-w-[320px] md:pl-[3vw] md:pr-10 overflow-x-visible md:overflow-x-auto" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
               <p className="font-mono text-label text-terminal uppercase">{intro.eyebrow}</p>
             </div>
             <div className="mt-8 flex flex-col items-center justify-center gap-4 text-center" role="alert">
@@ -142,7 +142,7 @@ export function Projects() {
       <section ref={rootRef} id="projects" aria-labelledby="projects-title" className="relative bg-void" style={{height: `${sectionHeight}svh`}}>
         <div className="sticky top-0 h-screen-s flex items-center justify-center pt-16 md:h-screen-s md:pt-0">
           <div className="grid md:grid-cols-[minmax(320px,50%)_1fr] md:items-start md:h-screen-s gap-8 md:gap-0 px-4 sm:px-6 md:px-0 w-full">
-            <div className="relative z-10 min-w-[320px] w-full md:pl-[3vw] md:pr-10 overflow-x-auto" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
+            <div className="relative z-10 min-w-0 w-full md:min-w-[320px] md:pl-[3vw] md:pr-10 overflow-x-visible md:overflow-x-auto" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
               <p className="font-mono text-label text-terminal uppercase">{intro.eyebrow}</p>
             </div>
             <div className="mt-8 flex flex-col items-center justify-center gap-4 text-center">
@@ -158,7 +158,7 @@ export function Projects() {
     <section ref={rootRef} id="projects" aria-labelledby="projects-title" className="relative bg-void" style={{height: `${sectionHeight}svh`}}>
       <div className="sticky top-0 h-screen-s flex items-center justify-center pt-16 md:h-screen-s md:pt-0">
         <div className="grid md:grid-cols-[minmax(320px,50%)_1fr] md:items-start md:h-screen-s gap-8 md:gap-0 px-4 sm:px-6 md:px-0 w-full">
-          <div className="relative z-10 min-w-[320px] w-full md:pl-[3vw] md:pr-10 overflow-x-auto" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
+          <div className="relative z-10 min-w-0 w-full md:min-w-[320px] md:pl-[3vw] md:pr-10 overflow-x-visible md:overflow-x-auto" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
             <p className="font-mono text-label text-terminal uppercase">{intro.eyebrow}</p>
             <div className="mt-8 flex items-center gap-4 font-mono text-label text-regolith/60 uppercase hidden md:flex" aria-hidden="true">
               <span>
