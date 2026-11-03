@@ -16,7 +16,6 @@ engine = create_async_engine(
     settings.DATABASE_URL,
     echo=settings.DEBUG,
     poolclass=NullPool,
-    pool_pre_ping=True,
     connect_args={"statement_cache_size": 0},
 )
 
