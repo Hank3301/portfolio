@@ -39,20 +39,22 @@ export function Projects() {
     return true;
   });
 
+  // onFrame effect - only runs on desktop (not mobile)
   useEffect(() => {
+    if (isMobile) return; // No horizontal track animation on mobile
+
     let lastP = -1;
     return onFrame(() => {
       const root = rootRef.current;
       const track = trackRef.current;
       if (!root || !track) return;
       const {p, rect, vh} = pinProgress(root);
-      // Mobile: don't restrict to viewport bounds as strictly
-      if (!isMobile && (rect.bottom < 0 || rect.top > vh)) return;
+      if (rect.bottom < 0 || rect.top > vh) return;
       if (Math.abs(p - lastP) < 0.00005) return;
       lastP = p;
 
       const vw = window.innerWidth;
-      const k = range(p, isMobile ? 0.02 : 0.04, isMobile ? 0.98 : 0.96);
+      const k = range(p, 0.04, 0.96);
       const travel = Math.max(0, track.offsetLeft + track.scrollWidth - vw * 0.94);
       track.style.transform = `translate3d(${-k * travel}px, 0, 0)`;
 
@@ -77,29 +79,31 @@ export function Projects() {
 
   const sectionHeight = isMobile ? MOBILE_SECTION_VH : SECTION_VH;
 
+  // Shared skeleton card for loading state
+  const SkeletonCard = () => (
+    <li className="w-full">
+      <article className="animate-pulse">
+        <div className="relative aspect-[4/3] overflow-hidden rounded-[6px] bg-void-2" />
+        <footer className="mt-4 space-y-3">
+          <div className="h-6 bg-white/10 rounded w-3/4" />
+          <div className="h-4 bg-white/5 rounded w-1/2" />
+          <div className="h-4 bg-white/5 rounded w-1/3" />
+          <div className="flex gap-1.5"><div className="h-6 w-20 bg-white/5 rounded" /><div className="h-6 w-20 bg-white/5 rounded" /></div>
+        </footer>
+      </article>
+    </li>
+  );
+
   if (isLoading) {
-    // Show skeleton while loading (no SSR in Vite SPA)
     return (
       <section ref={rootRef} id="projects" aria-labelledby="projects-title" className="relative bg-void" style={{height: `${sectionHeight}svh`}}>
-        <div className="sticky top-0 h-screen-s flex items-center justify-center pt-16 md:h-screen-s md:pt-0">
-          <div className="grid md:grid-cols-[minmax(320px,50%)_1fr] md:items-start md:h-screen-s gap-8 md:gap-0 px-4 sm:px-6 md:px-0 w-full">
+        <div className={`flex flex-col items-center justify-center pt-16 ${isMobile ? '' : 'sticky top-0 h-screen-s md:h-screen-s md:pt-0'}`}>
+          <div className={`grid md:grid-cols-[minmax(320px,50%)_1fr] md:items-start md:h-screen-s gap-8 md:gap-0 px-4 sm:px-6 md:px-0 w-full ${isMobile ? 'gap-8' : ''}`}>
             <div className="relative z-10 min-w-0 w-full md:min-w-[320px] md:pl-[3vw] md:pr-10 overflow-x-visible md:overflow-x-auto" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
               <p className="font-mono text-label text-terminal uppercase">{intro.eyebrow}</p>
             </div>
-            <ol className="mt-8 flex gap-5 pl-4 sm:pl-6 md:mt-0 md:gap-7 md:pl-0" aria-busy="true">
-              {[1, 2, 3].map((i) => (
-                <li key={i} className="w-[70vw] shrink-0 origin-bottom sm:w-[44vw] md:w-[clamp(16rem,24vw,23rem)]">
-                  <article className="animate-pulse">
-                    <div className="relative aspect-[4/3] overflow-hidden rounded-[6px] bg-void-2" />
-                    <footer className="mt-4 space-y-3">
-                      <div className="h-6 bg-white/10 rounded w-3/4" />
-                      <div className="h-4 bg-white/5 rounded w-1/2" />
-                      <div className="h-4 bg-white/5 rounded w-1/3" />
-                      <div className="flex gap-1.5"><div className="h-6 w-20 bg-white/5 rounded" /><div className="h-6 w-20 bg-white/5 rounded" /></div>
-                    </footer>
-                  </article>
-                </li>
-              ))}
+            <ol className={`mt-8 ${isMobile ? 'flex flex-col gap-5 w-full' : 'flex gap-5 pl-4 will-change-transform sm:pl-6 md:mt-0 md:gap-7 md:pl-0'}`} aria-busy="true">
+              {[1, 2, 3].map((i) => <SkeletonCard key={i} />)}
             </ol>
           </div>
         </div>
@@ -110,12 +114,12 @@ export function Projects() {
   if (error) {
     return (
       <section ref={rootRef} id="projects" aria-labelledby="projects-title" className="relative bg-void" style={{height: `${sectionHeight}svh`}}>
-        <div className="sticky top-0 h-screen-s flex items-center justify-center pt-16 md:h-screen-s md:pt-0">
-          <div className="grid md:grid-cols-[minmax(320px,50%)_1fr] md:items-start md:h-screen-s gap-8 md:gap-0 px-4 sm:px-6 md:px-0 w-full">
+        <div className={`flex flex-col items-center justify-center pt-16 ${isMobile ? '' : 'sticky top-0 h-screen-s md:h-screen-s md:pt-0'}`}>
+          <div className={`grid md:grid-cols-[minmax(320px,50%)_1fr] md:items-start md:h-screen-s gap-8 md:gap-0 px-4 sm:px-6 md:px-0 w-full ${isMobile ? 'gap-8' : ''}`}>
             <div className="relative z-10 min-w-0 w-full md:min-w-[320px] md:pl-[3vw] md:pr-10 overflow-x-visible md:overflow-x-auto" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
               <p className="font-mono text-label text-terminal uppercase">{intro.eyebrow}</p>
             </div>
-            <div className="mt-8 flex flex-col items-center justify-center gap-4 text-center" role="alert">
+            <div className="mt-8 flex flex-col items-center justify-center gap-4 text-center w-full" role="alert">
               <p className="text-regolith/70">Falha ao carregar os projetos.</p>
               <button
                 type="button"
@@ -134,12 +138,12 @@ export function Projects() {
   if (projects.length === 0) {
     return (
       <section ref={rootRef} id="projects" aria-labelledby="projects-title" className="relative bg-void" style={{height: `${sectionHeight}svh`}}>
-        <div className="sticky top-0 h-screen-s flex items-center justify-center pt-16 md:h-screen-s md:pt-0">
-          <div className="grid md:grid-cols-[minmax(320px,50%)_1fr] md:items-start md:h-screen-s gap-8 md:gap-0 px-4 sm:px-6 md:px-0 w-full">
+        <div className={`flex flex-col items-center justify-center pt-16 ${isMobile ? '' : 'sticky top-0 h-screen-s md:h-screen-s md:pt-0'}`}>
+          <div className={`grid md:grid-cols-[minmax(320px,50%)_1fr] md:items-start md:h-screen-s gap-8 md:gap-0 px-4 sm:px-6 md:px-0 w-full ${isMobile ? 'gap-8' : ''}`}>
             <div className="relative z-10 min-w-0 w-full md:min-w-[320px] md:pl-[3vw] md:pr-10 overflow-x-visible md:overflow-x-auto" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
               <p className="font-mono text-label text-terminal uppercase">{intro.eyebrow}</p>
             </div>
-            <div className="mt-8 flex flex-col items-center justify-center gap-4 text-center">
+            <div className="mt-8 flex flex-col items-center justify-center gap-4 text-center w-full">
               <p className="text-regolith/70">Nenhum projeto publicado ainda.</p>
             </div>
           </div>
@@ -148,10 +152,11 @@ export function Projects() {
     );
   }
 
+  // Main render with projects data
   return (
     <section ref={rootRef} id="projects" aria-labelledby="projects-title" className="relative bg-void" style={{height: `${sectionHeight}svh`}}>
-      <div className="sticky top-0 h-screen-s flex items-center justify-center pt-16 md:h-screen-s md:pt-0">
-        <div className="grid md:grid-cols-[minmax(320px,50%)_1fr] md:items-start md:h-screen-s gap-8 md:gap-0 px-4 sm:px-6 md:px-0 w-full">
+      <div className={`flex flex-col items-center justify-center pt-16 ${isMobile ? '' : 'sticky top-0 h-screen-s md:h-screen-s md:pt-0'}`}>
+        <div className={`grid md:grid-cols-[minmax(320px,50%)_1fr] md:items-start md:h-screen-s gap-8 md:gap-0 px-4 sm:px-6 md:px-0 w-full ${isMobile ? 'gap-8' : ''}`}>
           <div className="relative z-10 min-w-0 w-full md:min-w-[320px] md:pl-[3vw] md:pr-10 overflow-x-visible md:overflow-x-auto" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
             <p className="font-mono text-label text-terminal uppercase">{intro.eyebrow}</p>
             <div className="mt-8 flex items-center gap-4 font-mono text-label text-regolith/60 uppercase hidden md:flex" aria-hidden="true">
@@ -165,12 +170,15 @@ export function Projects() {
             </div>
           </div>
 
-          <ol ref={trackRef} className="mt-8 flex gap-5 pl-4 will-change-transform sm:pl-6 md:mt-0 md:gap-7 md:pl-0">
+          <ol
+            ref={trackRef}
+            className={`mt-8 ${isMobile ? 'flex flex-col gap-5 w-full' : 'flex gap-5 pl-4 will-change-transform sm:pl-6 md:mt-0 md:gap-7 md:pl-0'}`}
+          >
             {projects.map((p, i) => (
               <li
                 key={p.id ?? p.title}
                 ref={(el) => { if (el) cardRefs.current[i] = el; }}
-                className="w-[70vw] shrink-0 origin-bottom sm:w-[44vw] md:w-[clamp(16rem,24vw,23rem)]"
+                className={isMobile ? 'w-full' : 'w-[70vw] shrink-0 origin-bottom sm:w-[44vw] md:w-[clamp(16rem,24vw,23rem)]'}
               >
                 <article>
                   <div className="relative aspect-[4/3] overflow-hidden rounded-[6px] bg-void-2">

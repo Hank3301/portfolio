@@ -39,12 +39,18 @@ html.lenis body { height: auto; }
 }
 
 @layer base {
-  html { -webkit-text-size-adjust: 100%; background: var(--color-void); }
+  html { 
+    -webkit-text-size-adjust: 100%; 
+    background: var(--color-void); 
+    overflow-x: clip; 
+    overscroll-behavior-x: none; 
+  }
   body {
     margin: 0; background: var(--color-void); color: var(--color-regolith);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
     overflow-x: clip;
+    overscroll-behavior-x: none;
   }
   ::selection { background: var(--color-terminal); color: var(--color-void); }
   :focus-visible { outline: 1.5px solid var(--color-terminal); outline-offset: 3px; border-radius: 4px; }
