@@ -1,10 +1,18 @@
-// Shared fallback images for project cards
-// Files in public/media/cards/: m1-launch.webp, m2-orbit.webp, m3-base.webp, m4-walk.webp
-export const PROJECT_FALLBACK_IMAGES = [
-  '/media/cards/m1-launch.webp',
-  '/media/cards/m2-orbit.webp',
-  '/media/cards/m3-base.webp',
-  '/media/cards/m4-walk.webp',
+// Shared fallback image for project cards
+// File in public/media/cards/: code-fallback.jpg
+export const PROJECT_FALLBACK_IMAGE = '/media/cards/code-fallback.jpg' as const;
+
+// Pre-defined object positions to vary the framing per project
+const OBJECT_POSITIONS = [
+  'center',      // default
+  'center top',  // show more top
+  'center bottom', // show more bottom
+  'left center',   // show more left
+  'right center',  // show more right
+  'top left',
+  'top right',
+  'bottom left',
+  'bottom right',
 ] as const;
 
 export function hashCode(str: string): number {
@@ -15,7 +23,11 @@ export function hashCode(str: string): number {
   return h;
 }
 
-export function getProjectFallbackImage(projectId: string): string {
-  const index = Math.abs(hashCode(projectId)) % PROJECT_FALLBACK_IMAGES.length;
-  return PROJECT_FALLBACK_IMAGES[index];
+export function getProjectFallbackImage(_projectId: string): string {
+  return PROJECT_FALLBACK_IMAGE;
+}
+
+export function getProjectFallbackPosition(projectId: string): string {
+  const index = Math.abs(hashCode(projectId)) % OBJECT_POSITIONS.length;
+  return OBJECT_POSITIONS[index];
 }
