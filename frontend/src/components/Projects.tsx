@@ -39,12 +39,6 @@ export function Projects() {
     return true;
   });
 
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   useEffect(() => {
     let lastP = -1;
     return onFrame(() => {
@@ -84,21 +78,7 @@ export function Projects() {
   const sectionHeight = isMobile ? MOBILE_SECTION_VH : SECTION_VH;
 
   if (isLoading) {
-    if (!mounted) {
-      // SSR: render minimal placeholder to avoid hydration mismatch
-      return (
-        <section ref={rootRef} id="projects" aria-labelledby="projects-title" className="relative bg-void" style={{height: `${sectionHeight}svh`}}>
-          <div className="sticky top-0 h-screen-s flex items-center justify-center pt-16 md:h-screen-s md:pt-0">
-            <div className="grid md:grid-cols-[minmax(320px,50%)_1fr] md:items-start md:h-screen-s gap-8 md:gap-0 px-4 sm:px-6 md:px-0 w-full">
-              <div className="relative z-10 min-w-0 w-full md:min-w-[320px] md:pl-[3vw] md:pr-10 overflow-x-visible md:overflow-x-auto" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
-                <p className="font-mono text-label text-terminal uppercase">{intro.eyebrow}</p>
-              </div>
-            </div>
-          </div>
-        </section>
-      );
-    }
-    // Client-side: show full skeleton
+    // Show skeleton while loading (no SSR in Vite SPA)
     return (
       <section ref={rootRef} id="projects" aria-labelledby="projects-title" className="relative bg-void" style={{height: `${sectionHeight}svh`}}>
         <div className="sticky top-0 h-screen-s flex items-center justify-center pt-16 md:h-screen-s md:pt-0">
