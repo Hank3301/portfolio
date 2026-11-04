@@ -4,7 +4,7 @@ import {intro} from '../content';
 import {listProjects} from '../services/api';
 import {clamp, pinProgress, range} from '../lib/math';
 import {onFrame} from '../lib/scroll';
-import {PROJECT_FALLBACK_IMAGES, hashCode} from '../lib/images';
+import {getProjectFallbackImage, getProjectFallbackPosition} from '../lib/images';
 
 const SECTION_VH = 340;
 const MOBILE_SECTION_VH = 180; // Reduced height for mobile
@@ -193,12 +193,12 @@ export function Projects() {
                       onError={(e) => {
                         const target = e.currentTarget;
                         const currentSrc = target.src;
-                        const fallbackIndex = Math.abs(hashCode(p.id)) % PROJECT_FALLBACK_IMAGES.length;
-                        const localFallback = PROJECT_FALLBACK_IMAGES[fallbackIndex];
+                        const localFallback = getProjectFallbackImage(p.id);
                         if (!currentSrc.endsWith(localFallback)) {
                           target.src = localFallback;
                         }
                       }}
+                      style={{ objectPosition: getProjectFallbackPosition(p.id) }}
                       className="size-full object-cover will-change-transform"
                     />
                     {p.tag && (
