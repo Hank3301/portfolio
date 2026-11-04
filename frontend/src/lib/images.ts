@@ -16,11 +16,13 @@ const OBJECT_POSITIONS = [
 ] as const;
 
 export function hashCode(str: string): number {
-  let h = 0;
+  // FNV-1a hash for better distribution
+  let h = 0x811c9dc5;
   for (let i = 0; i < str.length; i++) {
-    h = ((h << 5) - h + str.charCodeAt(i)) | 0;
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
   }
-  return h;
+  return h >>> 0;
 }
 
 export function getProjectFallbackImage(_projectId: string): string {
