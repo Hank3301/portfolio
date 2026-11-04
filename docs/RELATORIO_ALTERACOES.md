@@ -260,3 +260,136 @@ e46cbc3 Merge pull request #5 from Hank3301/fix/projects-grid-server-components
 ---
 
 *Relatório gerado em 2026-11-03 — Reflete commits até `6d05ed7` na branch `feat/migrar-frontend-vite`*
+
+---
+
+# Adendo — Branch `chore/limpeza-raiz` (2026-11-04)
+
+**Base:** `main` @ `970ee20` (inclui PR #7 com fixes mobile 7c4efe3, ccb09ce)  
+**Branch:** `chore/limpeza-raiz`  
+**Objetivo:** Limpeza pós-migração, correção de skeleton, fallback local, PT-BR, OG/SEO.
+
+---
+
+## Commits da Branch `chore/limpeza-raiz`
+
+| Etapa | Commit | Mensagem |
+|-------|--------|----------|
+| A | `bc62b26` | `chore: remove app Vite duplicado e arquivos soltos da raiz` |
+| B | `adaa56a` | `fix: skeleton do Projects mostra durante loading client-side` |
+| C | `d9727b0` | `chore: remove dead fields from content.ts` |
+| D | `34c5904` | `refactor: fallback de imagem local + remover image_url do schema` |
+| E | `255ba62` | `chore(frontend): traduz interface para PT-BR e configura tags de og:image` |
+
+---
+
+## Detalhamento por Etapa
+
+### Etapa A — Limpeza da Raiz (`bc62b26`)
+**Problema:** Após migração para Vite, a raiz continha o app Vite duplicado + arquivos soltos.
+- **Removidos 56 arquivos** da raiz: `index.html`, `package.json`, `package-lock.json`, `tsconfig.json`, `vite.config.ts`, `.env.example`, `public/`, `src/`, `RELATORIO_ALTERACOES.md` (antigo), `pr-body.md`, `sites-de-portfolios.txt`
+- **Mantidos:** apenas `backend/`, `frontend/`, `docs/`, `.gitignore`, `README.md`
+- **Validação:** `npm ci` → `tsc --noEmit` → `npm run build` ✅ no `frontend/`
+
+### Etapa B — Esqueleto de Loading Correto (`adaa56a`)
+**Problema:** Condição `if (isLoading && !mounted)` em `Projects.tsx` fazia o skeleton desaparecer após o primeiro render (mounted=true) enquanto dados ainda carregavam. **O projeto é SPA Vite (sem SSR);** a flag `mounted` servia apenas para evitar hydration mismatch inicial.
+- **Correção em `Projects.tsx`:**
+  - Removida flag `mounted` e `useEffect` — desnecessários em SPA Vite sem SSR
+  - Skeleton agora renderiza diretamente com `if (isLoading)` — sem condição de mounted
+  - Sem SSR: não há risco de hydration mismatch
+- **Validação:** `tsc --noEmit` ✅, `npm run build` ✅
+
+### Etapa C — Remoção de Campos Mortos (`d9727b0`)
+**Problema:** `content.ts` tinha 15 campos não usados em nenhum componente.
+- **Removidos de `content.ts`:**
+  - `expertise.note`, `expertise.items` (usa `skillGroups` hardcoded em `Expertise.tsx`)
+  - `brand.email`, `brand.github`, `brand.linkedin` (restaurados na Etapa E)
+  - `hero.tagline`, `hero.location` (não usados no `Hero.tsx`)
+  - `intro.heading`, `intro.body` (não usados no `Projects.tsx`)
+  - `contact.heading`, `contact.body`, `contact.window`, `contact.windowLabel`, `contact.tracks`, `contact.form` (não usados no `Contact.tsx`)
+- **Resultado:** `content.ts` enxuto, só o que é consumido
+- **Validação:** `tsc --noEmit` ✅, `npm run build` ✅
+
+### Etapa D — Fallback de Imagem Local + Schema Limpo (`34c5904`)
+**Problema:** `Projects.tsx` usava URL Unsplash como fallback; `api.ts` tinha `image_url` opcional no schema mas não era usado.
+- **Criado helper compartilhado** `frontend/src/lib/images.ts`:
+  - `PROJECT_FALLBACK_IMAGES` = 4 imagens locais (`/media/cards/m1-launch.webp`…`m4-walk.webp`)
+  - `hashCode()` determinístico
+  - `getProjectFallbackImage(projectId)` — seleção consistente
+- **Atualizados:**
+  - `api.ts`: `mapApiProjectToUI()` usa `getProjectFallbackImage()`; removido `image_url` do `ApiProjectSchema`
+  - `Projects.tsx`: `onError` usa `PROJECT_FALLBACK_IMAGES` + `hashCode()` do helper
+- **Validação:** `tsc --noEmit` ✅, `npm run build` ✅
+
+### Etapa E — PT-BR + OG + Contatos Restaurados (`255ba62`)
+**Problema:** Interface em inglês; sem tags OG; contatos removidos na Etapa C.
+- **Traduções PT-BR:**
+  - `Hero.tsx` HUD: "System clock"→"Relógio do sistema", "Worker pool"→"Pool de workers", "PROCESSING/IDLE"→"PROCESSANDO/OCIOSO", "Scroll"→"Explorar"
+  - `Chrome.tsx`: "Close"→"Fechar", "Back to top ↑"→"Voltar ao topo ↑" (numeração "01/02/03" mantida)
+- **Tags OG/SEO em `frontend/index.html`:**
+  - `og:image` + `twitter:image` → `https://portfolio-los-ovos.vercel.app/og.jpg`
+  - `og:image:width=1200`, `og:image:height=630`
+- **Restaurados em `content.ts` (brand):**
+  - `email: 'hcosta547@gmail.com'`
+  - `github: 'https://github.com/Hank3301'`
+  - `linkedin: 'https://www.linkedin.com/in/hugo-costa-de-souza-4a7291292/'`
+- **`Contact.tsx`:** usa `brand.email`, `brand.github`, `brand.linkedin` (antes usava `lib/contact.ts`)
+- **Revertidos `package.json`/`package-lock.json`:** removido `playwright` (era só para diagnóstico)
+- **Validação:** `tsc --noEmit` ✅, `npm run build` ✅
+
+---
+
+## Validações Finais
+
+| Verificação | Comando | Status |
+|-------------|---------|--------|
+| TypeScript | `npx tsc --noEmit` | ✅ 0 erros |
+| Build Produção | `npm run build` | ✅ 1.38s |
+| Git Status | `git status --short` | ✅ Limpo |
+| Diagnósticos | `diagnose-*.cjs` | ✅ Removidos |
+| Dependências | `package.json` | ✅ Sem `playwright` |
+
+---
+
+## Arquivos Modificados (Resumo)
+
+```
+frontend/
+├── index.html                          # og:image + twitter:image
+├── package.json                        # Revertido (sem playwright)
+├── package-lock.json                   # Revertido
+├── src/
+│   ├── components/
+│   │   ├── Hero.tsx                    # HUD PT-BR
+│   │   ├── Projects.tsx                # Skeleton fix + fallback local
+│   │   ├── Contact.tsx                 # brand.email/github/linkedin
+│   │   └── Chrome.tsx                  # Labels PT-BR
+│   ├── content.ts                      # -15 dead fields, +3 brand fields
+│   ├── services/api.ts                 # -image_url schema, helper local
+│   └── lib/images.ts                   # NOVO: helper compartilhado
+docs/
+└── RELATORIO_ALTERACOES.md             # Este adendo
+README.md                               # Próximos passos atualizados
+```
+
+---
+
+## Próximos Passos (Responsabilidade do Usuário)
+
+1. **Vercel:** Confirmar `og.jpg` em `https://portfolio-los-ovos.vercel.app/og.jpg` (1200x630)
+2. **Deploy:** Merge `chore/limpeza-raiz` → `main` → deploy automático Vercel/Render
+3. **Backend:** Limpar projeto duplicado "Sistema de Gestão Tecnotextil" no banco
+4. **Opcional:** Fornecer bio/tagline, currículo se desejar
+
+---
+
+## Links de Referência
+
+- **GitHub:** https://github.com/Hank3301/portfolio
+- **API (Render):** https://portfolio-api-hank.onrender.com
+- **Swagger:** https://portfolio-api-hank.onrender.com/docs
+- **Frontend (Vercel):** https://portfolio-los-ovos.vercel.app/
+
+---
+
+*Adendo gerado em 2026-11-04 — Reflete commits `bc62b26` até `255ba62` na branch `chore/limpeza-raiz`*
