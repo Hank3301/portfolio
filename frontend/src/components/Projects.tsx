@@ -4,11 +4,10 @@ import {intro} from '../content';
 import {listProjects} from '../services/api';
 import {clamp, pinProgress, range} from '../lib/math';
 import {onFrame} from '../lib/scroll';
+import {PROJECT_FALLBACK_IMAGES, hashCode} from '../lib/images';
 
 const SECTION_VH = 340;
 const MOBILE_SECTION_VH = 180; // Reduced height for mobile
-// Fallback temático de programação (Unsplash - código em IDE escura)
-const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1200&q=80';
 
 export function Projects() {
   const rootRef = useRef<HTMLElement>(null);
@@ -39,12 +38,6 @@ export function Projects() {
     seenIds.add(p.id);
     return true;
   });
-
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     let lastP = -1;
@@ -84,7 +77,8 @@ export function Projects() {
 
   const sectionHeight = isMobile ? MOBILE_SECTION_VH : SECTION_VH;
 
-  if (isLoading && !mounted) {
+  if (isLoading) {
+    // Show skeleton while loading (no SSR in Vite SPA)
     return (
       <section ref={rootRef} id="projects" aria-labelledby="projects-title" className="relative bg-void" style={{height: `${sectionHeight}svh`}}>
         <div className="sticky top-0 h-screen-s flex items-center justify-center pt-16 md:h-screen-s md:pt-0">
@@ -190,8 +184,11 @@ export function Projects() {
                       decoding="async"
                       onError={(e) => {
                         const target = e.currentTarget;
-                        if (target.src !== FALLBACK_IMAGE) {
-                          target.src = FALLBACK_IMAGE;
+                        const currentSrc = target.src;
+                        const fallbackIndex = Math.abs(hashCode(p.id)) % PROJECT_FALLBACK_IMAGES.length;
+                        const localFallback = PROJECT_FALLBACK_IMAGES[fallbackIndex];
+                        if (!currentSrc.endsWith(localFallback)) {
+                          target.src = localFallback;
                         }
                       }}
                       className="size-full object-cover will-change-transform"

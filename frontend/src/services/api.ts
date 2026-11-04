@@ -1,4 +1,5 @@
 import {z} from 'zod';
+import {getProjectFallbackImage} from '../lib/images';
 
 // ============================================
 // Types (match FastAPI backend schemas)
@@ -15,8 +16,6 @@ export const ApiProjectSchema = z.object({
   is_visible: z.boolean(),
   created_at: z.string().datetime(),
   updated_at: z.string().datetime(),
-  // Custom image URL for the project (optional)
-  image_url: z.string().url().nullable().optional(),
 });
 
 export const ProjectsResponseSchema = z.object({
@@ -208,9 +207,8 @@ export function getAdminToken(): string | null {
 // ============================================
 
 function mapApiProjectToUI(api: ApiProject): UIProject {
-  // Use custom image_url if provided, otherwise generate from project ID
-  const customImage = (api as any).image_url;
-  const fallbackImage = `/media/cards/m${((Math.abs(hashCode(api.id)) % 4) + 1)}.webp`;
+  // Always use local fallback image based on project ID
+  const fallbackImage = getProjectFallbackImage(api.id);
 
   return {
     id: api.id,
@@ -221,16 +219,8 @@ function mapApiProjectToUI(api: ApiProject): UIProject {
     link: api.live_url ?? api.github_url ?? null,
     liveUrl: api.live_url,
     githubUrl: api.github_url,
-    image: customImage && customImage.trim() !== '' ? customImage : fallbackImage,
+    image: fallbackImage,
   };
-}
-
-function hashCode(str: string): number {
-  let h = 0;
-  for (let i = 0; i < str.length; i++) {
-    h = ((h << 5) - h + str.charCodeAt(i)) | 0;
-  }
-  return h;
 }
 
 export async function listProjects(): Promise<{projects: UIProject[]; total: number}> {

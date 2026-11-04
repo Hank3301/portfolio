@@ -5,8 +5,6 @@
 export const expertise = {
   eyebrow: 'Especialidades',
   heading: 'Três camadas da stack.',
-  note: '',
-  items: [] as any[],
 };
 
 // ============================================
@@ -30,14 +28,10 @@ export const nav = [
 export const hero = {
   title: 'DESENVOLVEDOR BACKEND',
   subtitle: 'Automação • Bots • Agentes de IA',
-  tagline: '',
-  location: '',
 };
 
 export const intro = {
   eyebrow: 'Projetos',
-  heading: '',
-  body: '',
 };
 
 // ============================================
@@ -46,10 +40,4 @@ export const intro = {
 
 export const contact = {
   eyebrow: 'Contato',
-  heading: '',
-  body: '',
-  window: '',
-  windowLabel: '',
-  tracks: [] as any[],
-  form: {} as any,
 };

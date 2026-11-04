@@ -24,7 +24,7 @@ Monorepo com backend (FastAPI) e frontend (Vite + React 19 + Tailwind v4 + Lenis
     ├── src/
     │   ├── components/   # Hero, Projects, Expertise, Contact, Chrome (Header/Footer), UI
     │   ├── hooks/        # useFitText, useReducedMotion, useReveals
-    │   ├── lib/          # math, scroll (Lenis), utils, contact.ts
+    │   ├── lib/          # math, scroll (Lenis), utils, images, contact.ts
     │   ├── pages/        # admin/ (AdminLogin, AdminLayout, AdminDashboard)
     │   ├── services/     # api.ts (tipos + fetch real), queryClient.ts
     │   ├── App.tsx
@@ -87,7 +87,7 @@ npm run dev
 | `GITHUB_USERNAME` | Username GitHub para integração |
 | `PYTHON_VERSION` | `3.11.9` (fixo no Render) |
 | `DEBUG` | Modo debug (padrão: `true` dev, `false` produção) |
-| `ALLOWED_ORIGINS` | Lista JSON de origens CORS permitidas (ex: `["https://seu-dominio.vercel.app"]`) |
+| `ALLOWED_ORIGINS` | Lista JSON de origens CORS permitidas (ex: `["https://portfolio-los-ovos.vercel.app"]`) |
 | `GITHUB_TOKEN` | (Opcional) Token GitHub para integração |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | Expiração do token JWT em minutos (padrão: 10080 = 7 dias) |
 
@@ -95,8 +95,6 @@ npm run dev
 | Variável | Descrição |
 |----------|-----------|
 | `VITE_API_URL` | URL da API (ex: `https://portfolio-api-hank.onrender.com/api`) |
-
-> **Importante:** A variável do frontend agora é `VITE_API_URL` (não `NEXT_PUBLIC_API_URL`), e deve incluir `/api` no final (ex: `https://portfolio-api-hank.onrender.com/api`).
 
 ---
 
@@ -139,7 +137,7 @@ uvicorn main:app --host 0.0.0.0 --port 8000  # produção local
 
 ## Próximos Passos
 
-- [x] Migração Next.js → Vite + React 19 + Tailwind v4 + Lenis
+- [x] Frontend Vite + React 19 + Tailwind v4 + Lenis funcional
 - [x] Seções públicas usando API real (Hero, Projects, Expertise, Contact)
 - [x] Admin Dashboard com CRUD de projetos (JWT, PUT, UUID)
 - [ ] Deploy na Vercel (configurar framework Vite)
