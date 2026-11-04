@@ -4,24 +4,10 @@ import {intro} from '../content';
 import {listProjects} from '../services/api';
 import {clamp, pinProgress, range} from '../lib/math';
 import {onFrame} from '../lib/scroll';
+import {PROJECT_FALLBACK_IMAGES, hashCode} from '../lib/images';
 
 const SECTION_VH = 340;
 const MOBILE_SECTION_VH = 180; // Reduced height for mobile
-// Local fallback images (m1-m4.webp in public/media/cards/)
-const LOCAL_FALLBACKS = [
-  '/media/cards/m1-launch.webp',
-  '/media/cards/m2-orbit.webp',
-  '/media/cards/m3-base.webp',
-  '/media/cards/m4-walk.webp',
-] as const;
-
-function hashCode(str: string): number {
-  let h = 0;
-  for (let i = 0; i < str.length; i++) {
-    h = ((h << 5) - h + str.charCodeAt(i)) | 0;
-  }
-  return h;
-}
 
 export function Projects() {
   const rootRef = useRef<HTMLElement>(null);
@@ -219,8 +205,8 @@ export function Projects() {
                       onError={(e) => {
                         const target = e.currentTarget;
                         const currentSrc = target.src;
-                        const fallbackIndex = Math.abs(hashCode(p.id)) % LOCAL_FALLBACKS.length;
-                        const localFallback = LOCAL_FALLBACKS[fallbackIndex];
+                        const fallbackIndex = Math.abs(hashCode(p.id)) % PROJECT_FALLBACK_IMAGES.length;
+                        const localFallback = PROJECT_FALLBACK_IMAGES[fallbackIndex];
                         if (!currentSrc.endsWith(localFallback)) {
                           target.src = localFallback;
                         }

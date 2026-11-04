@@ -14,6 +14,9 @@ export const expertise = {
 export const brand = {
   name: 'Hugo Costa de Souza',
   handle: '@Hank3301',
+  email: 'hcosta547@gmail.com',
+  github: 'https://github.com/Hank3301',
+  linkedin: 'https://www.linkedin.com/in/hugo-costa-de-souza-4a7291292/',
 };
 
 export const nav = [

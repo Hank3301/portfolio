@@ -35,7 +35,7 @@ export function Header() {
           ))}
         </nav>
         <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} aria-controls="menu" className="font-mono text-label uppercase md:hidden">
-          {open ? 'Close' : 'Menu'}
+          {open ? 'Fechar' : 'Menu'}
         </button>
       </div>
       <div id="menu" inert={!open} className={`fixed inset-0 -z-10 flex flex-col justify-center gap-6 bg-void/95 px-6 backdrop-blur-xl transition-opacity md:hidden ${open ? 'opacity-100' : 'pointer-events-none opacity-0'}`}>
@@ -60,7 +60,7 @@ export function Footer() {
         </span>
         <span>© {new Date().getFullYear()} · Built with Vite + React + Lenis</span>
         <a href="#top" onClick={(e) => go(e)} className="hover:text-white">
-          Back to top ↑
+          Voltar ao topo ↑
         </a>
       </div>
     </footer>

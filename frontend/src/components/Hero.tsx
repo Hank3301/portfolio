@@ -143,7 +143,7 @@ export function Hero() {
       hudRef.current!.style.opacity = String(range(p, 0.05, 0.15) * (1 - range(p, 0.6, 0.7)));
       const secs = p * 5400;
       clockRef.current!.textContent = `UPTIME ${String(Math.floor(secs / 3600)).padStart(2, '0')}:${String(Math.floor((secs % 3600) / 60)).padStart(2, '0')}:${String(Math.floor(secs % 60)).padStart(2, '0')}`;
-      statusRef.current!.textContent = range(p, 0.3, 0.6) > 0.5 ? 'PROCESSING' : 'IDLE';
+      statusRef.current!.textContent = range(p, 0.3, 0.6) > 0.5 ? 'PROCESSANDO' : 'OCIOSO';
     });
   }, [isMobile]);
 
@@ -168,14 +168,14 @@ export function Hero() {
           <div className="brackets absolute inset-0 text-regolith/40" />
           <div className="absolute top-16 left-3 space-y-1 md:top-20 md:left-4">
             <p ref={clockRef}>UPTIME 00:00:00</p>
-            <p className="text-regolith/50">System clock</p>
+            <p className="text-regolith/50">Relógio do sistema</p>
           </div>
           <div className="absolute top-16 right-3 space-y-1 text-right md:top-20 md:right-4">
-            <p>Status <span ref={statusRef} className="text-terminal">IDLE</span></p>
-            <p className="text-regolith/50">Worker pool</p>
+            <p>Status <span ref={statusRef} className="text-terminal">OCIOSO</span></p>
+            <p className="text-regolith/50">Pool de workers</p>
           </div>
           <div className="absolute right-3 bottom-3 flex items-center gap-2 md:right-4 md:bottom-4">
-            Scroll <span className="inline-block animate-bounce motion-reduce:animate-none text-terminal">↓</span>
+            Explorar <span className="inline-block animate-bounce motion-reduce:animate-none text-terminal">↓</span>
           </div>
         </div>
       </div>
